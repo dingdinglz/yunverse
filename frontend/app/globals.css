@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* 亮色仪表盘主题令牌（锁定亮色，不随系统切换暗色）。
+   中性 slate 基底 + 功能状态色（专用于语义，不作装饰）。 */
+:root {
+  --background: #f4f5f7; /* off-white，页面底 */
+  --surface: #ffffff; /* 卡片/表格面 */
+  --surface-muted: #f8fafc; /* 次级面 */
+  --border: #e4e7ec; /* 细边框 */
+  --foreground: #0f172a; /* 主文字 slate-900 */
+  --muted: #64748b; /* 次级文字 slate-500 */
+
+  /* 功能状态色 */
+  --ok: #16a34a; /* 已连接 / 播放成功 */
+  --ok-soft: #dcfce7;
+  --danger: #dc2626; /* 未连接 / 播放失败 */
+  --danger-soft: #fee2e2;
+  --info: #2563eb; /* 连接中 / 空闲强调 */
+  --info-soft: #dbeafe;
+  --warn: #d97706; /* warnings 提示 */
+  --warn-soft: #fef3c7;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}

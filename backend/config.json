@@ -1,0 +1,35 @@
+{
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "audio": {
+    "rootDir": "audio"
+  },
+  "playback": {
+    "device": "default",
+    "queueMode": "serial",
+    "maxQueue": 32
+  },
+  "gesture": {
+    "expireMs": 1000,
+    "fallbackTechnique": "normal",
+    "mapping": {},
+    "techniques": {},
+    "minConfidence": 0.0
+  },
+  "history": {
+    "maxSize": 100
+  },
+  "cors": {
+    "allowOrigins": ["http://localhost:3000"]
+  },
+  "ring": {
+    "enabled": false,
+    "address": ""
+  },
+  "auth": {
+    "enabled": false,
+    "token": ""
+  }
+}

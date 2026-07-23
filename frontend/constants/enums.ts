@@ -1,0 +1,58 @@
+// 本地默认枚举与兜底映射。
+// 当后端 /api/v1/config 暂不可用时（web-frontend.md §10），前端使用这些默认值。
+
+import type { CodeName } from "@/types/domain";
+
+/** 默认乐器（code -> 中文名） */
+export const DEFAULT_INSTRUMENTS: Record<string, string> = {
+  guitar: "吉他",
+  pipa: "琵琶",
+};
+
+/** 默认音调（api.md §2.6） */
+export const DEFAULT_KEYS: string[] = [
+  "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb",
+  "G", "G#", "Ab", "A", "A#", "Bb", "B",
+];
+
+/** 默认音符（code -> 展示 label，api.md §2.7；do_high 展示为 do） */
+export const DEFAULT_NOTES: Record<string, string> = {
+  do: "do",
+  ri: "ri",
+  mi: "mi",
+  fa: "fa",
+  so: "so",
+  la: "la",
+  xi: "xi",
+  do_high: "do",
+};
+
+/** 默认技法（code -> 中文名，api.md §2.8） */
+export const DEFAULT_TECHNIQUES: Record<string, string> = {
+  normal: "普通演奏",
+  // 预留扩展，以配置接口返回为准
+  pluck: "拨弦",
+  strum: "扫弦",
+  slide: "滑音",
+  vibrato: "揉弦",
+};
+
+/** 技法未知/为空时的兜底展示（web-frontend.md §6.2） */
+export const UNKNOWN_TECHNIQUE_NAME = "未知技法";
+
+/** 空值占位符 */
+export const EMPTY_PLACEHOLDER = "—";
+
+/** 历史记录默认展示条数（web-frontend.md §6.3） */
+export const HISTORY_LIMIT = 50;
+
+/** 轮询间隔（web-frontend.md §8.2） */
+export const STATE_POLL_MS = 1000;
+export const HISTORY_POLL_MS = 3000;
+
+/** 请求超时（web-frontend.md §6.5，所有请求应设超时） */
+export const REQUEST_TIMEOUT_MS = 4000;
+
+export const DEFAULT_TECHNIQUE_LIST: CodeName[] = Object.entries(
+  DEFAULT_TECHNIQUES,
+).map(([code, name]) => ({ code, name }));
