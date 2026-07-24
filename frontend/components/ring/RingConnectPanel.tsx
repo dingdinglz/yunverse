@@ -44,6 +44,7 @@ export default function RingConnectPanel({
 
   const connection = status?.connection ?? "disconnected";
   const connected = connection === "connected";
+  const reconnecting = connection === "reconnecting";
   const info = status?.deviceInfo ?? null;
 
   const handleScanSelect = (addr: string) => {
@@ -63,20 +64,42 @@ export default function RingConnectPanel({
         <ConnectionBadge status={connection} />
       </header>
 
-      {connected ? (
+      {connected || reconnecting ? (
         <div className="flex flex-col gap-4">
+          {/* 实时模式指示 */}
+          <div className="flex items-center gap-3">
+            <span
+              className={[
+                "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium",
+                status?.mode === "gesture"
+                  ? "border-info/30 bg-info-soft text-info"
+                  : status?.mode === "recording"
+                    ? "border-warn/30 bg-warn-soft text-warn"
+                    : "border-border bg-surface-muted text-muted",
+              ].join(" ")}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  status?.mode === "gesture"
+                    ? "bg-info"
+                    : status?.mode === "recording"
+                      ? "bg-warn animate-pulse"
+                      : "bg-muted"
+                }`}
+              />
+              {status?.mode === "gesture"
+                ? "手势模式"
+                : status?.mode === "recording"
+                  ? "录音模式"
+                  : "检测中..."}
+            </span>
+            {status?.mode === "recording" && (
+              <span className="text-xs text-muted">单击戒指按键切换到手势模式</span>
+            )}
+          </div>
+
           <div className="rounded-xl border border-border bg-surface-muted p-4">
             <InfoRow label="设备地址" value={status?.address ?? EMPTY_PLACEHOLDER} />
-            <InfoRow
-              label="工作模式"
-              value={
-                status?.mode === "gesture"
-                  ? "手势模式"
-                  : status?.mode === "recording"
-                    ? "录音模式（请单击按键切换）"
-                    : EMPTY_PLACEHOLDER
-              }
-            />
             {info ? (
               <>
                 <InfoRow label="固件版本" value={info.firmwareVersion} />

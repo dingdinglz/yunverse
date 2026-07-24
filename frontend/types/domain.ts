@@ -73,4 +73,4 @@ export interface HistoryPage {
 }
 
 /** 连接状态（前端派生，非后端字段） */
-export type ConnectionStatus = "connecting" | "connected" | "disconnected";
+export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "reconnecting";

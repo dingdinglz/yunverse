@@ -1,7 +1,7 @@
 // 戒指设置页相关的领域类型，对齐后端 app/ring_manager.py 的返回结构与
 // app/ring_api.py 的 SSE 事件（type: status | imu | event | recognition | recording）。
 
-export type RingConnection = "disconnected" | "connecting" | "connected";
+export type RingConnection = "disconnected" | "connecting" | "connected" | "reconnecting";
 export type RingMode = "gesture" | "recording" | null;
 
 /** GET /api/v1/ring/status -> data */

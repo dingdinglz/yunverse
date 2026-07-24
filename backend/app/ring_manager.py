@@ -409,7 +409,9 @@ class RingManager:
         if not self._client:
             return
         address = self._address
+        self._conn_state = "reconnecting"
         self._publish("event", {"kind": "info", "message": "正在重新连接..."})
+        self._publish_status()
         try:
             for t in self._stream_tasks:
                 if not t.done():
@@ -420,8 +422,6 @@ class RingManager:
             except Exception:
                 pass
             self._client = None
-            self._conn_state = "disconnected"
-            self._publish_status()
             await asyncio.sleep(1.0)
             if address:
                 await self._connect(address)
@@ -461,11 +461,25 @@ class RingManager:
     async def _listen_events(self) -> None:
         sdk = self._sdk
         await asyncio.gather(
-            self._listen(sdk.wait_sensor_key_single_press_event, "key_single"),
+            self._listen_key_single(),
             self._listen(sdk.wait_sensor_double_tap_event, "double_tap"),
             self._listen_hmm_gesture(),
             return_exceptions=True,
         )
+
+    async def _listen_key_single(self) -> None:
+        sdk = self._sdk
+        while self._conn_state == "connected" and self._client:
+            try:
+                ev = await sdk.wait_sensor_key_single_press_event(self._client, timeout_s=60.0)
+            except sdk.TimeoutError:
+                continue
+            except asyncio.CancelledError:
+                break
+            except Exception:
+                break
+            self._publish("event", {"kind": "key_single", "ts": getattr(ev, "timestamp_ms", None)})
+            self._toggle_mode()
 
     async def _listen(self, waiter: Callable, kind: str) -> None:
         while self._conn_state == "connected" and self._client:
@@ -499,6 +513,29 @@ class RingManager:
                     "ts": ev.timestamp_ms,
                 },
             )
+
+    def _toggle_mode(self) -> None:
+        """按键单击切换模式：停止当前 IMU stream，切换 mode，重启 stream。"""
+        if self._mode == "gesture":
+            self._mode = "recording"
+            self._publish("event", {"kind": "info", "message": "切换到录音模式"})
+            # 取消 IMU stream task，让它停掉
+            for t in self._stream_tasks:
+                if t.get_coro().__name__ == "_stream" and not t.done():
+                    t.cancel()
+                    break
+        else:
+            self._mode = "gesture"
+            self._publish("event", {"kind": "info", "message": "切换到手势模式，重启 IMU..."})
+            # 重启 IMU stream task
+            has_stream = any(
+                not t.done() and t.get_coro().__name__ == "_stream"
+                for t in self._stream_tasks
+            )
+            if not has_stream:
+                new_task = asyncio.ensure_future(self._stream())
+                self._stream_tasks.append(new_task)
+        self._publish_status()
 
     # ------------------------------------------------------------------ #
     # 录音监听（运行在管理器 loop 上，录音模式下自动接收音频文件）

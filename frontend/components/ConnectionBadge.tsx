@@ -18,6 +18,13 @@ const CONFIG: Record<
     bg: "bg-info-soft",
     border: "border-info/30",
   },
+  reconnecting: {
+    label: "重连中",
+    dot: "bg-warn animate-pulse",
+    text: "text-warn",
+    bg: "bg-warn-soft",
+    border: "border-warn/30",
+  },
   disconnected: {
     label: "未连接",
     dot: "bg-danger",
