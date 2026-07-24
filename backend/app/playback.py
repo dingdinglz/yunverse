@@ -95,7 +95,7 @@ class PlaybackExecutor:
                 {"device": self._device},
             )
 
-    async def submit(self, path: Path) -> str:
+    async def submit(self, path: Path, loop: bool = False) -> str:
         """打断当前播放并立即播放新音频，返回 submittedAt (ISO)。"""
         self.check_device()
         self._player.stop()
@@ -105,12 +105,14 @@ class PlaybackExecutor:
                 await self._current_task
             except asyncio.CancelledError:
                 pass
-        self._current_task = asyncio.create_task(self._do_play(path))
+        self._current_task = asyncio.create_task(self._do_play(path, loop))
         return iso_now()
 
-    async def _do_play(self, path: Path) -> None:
+    async def _do_play(self, path: Path, loop: bool = False) -> None:
         try:
             await self._player.play(path)
+            while loop:
+                await self._player.play(path)
         except asyncio.CancelledError:
             self._player.stop()
         except Exception as exc:

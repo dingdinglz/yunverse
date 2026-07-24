@@ -14,6 +14,7 @@ class PlayRequest(BaseModel):
     instrument: str
     key: str
     note: str
+    loop: bool = False
 
 
 class RingGestureRequest(BaseModel):

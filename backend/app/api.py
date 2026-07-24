@@ -66,8 +66,18 @@ async def get_config(request: Request):
 @router.post("/play")
 async def play(request: Request, body: PlayRequest):
     orchestrator = request.app.state.orchestrator
-    data = await orchestrator.play(body.instrument, body.key, body.note)
+    data = await orchestrator.play(body.instrument, body.key, body.note, loop=body.loop)
     return success_body(data)
+
+
+# ---------------------------------------------------------------------------
+# 6b. 停止播放
+# ---------------------------------------------------------------------------
+@router.post("/play/stop")
+async def play_stop(request: Request):
+    playback: "PlaybackExecutor" = request.app.state.playback
+    await playback.stop()
+    return success_body({"stopped": True})
 
 
 # ---------------------------------------------------------------------------

@@ -30,7 +30,7 @@ export default function PlayScreen() {
   const baseUrl = preferences.backendBaseUrl;
   const { status, retry } = useConnection(baseUrl);
   const { instruments, keys, notes, refresh } = useConfig(baseUrl, preferences.selectedInstrument);
-  const { phase, pendingNote, recent, errorMessage, triggerPlay } = usePlay(baseUrl);
+  const { phase, pendingNote, recent, errorMessage, triggerPlay, stopPlay } = usePlay(baseUrl);
 
   const [instrumentModal, setInstrumentModal] = useState(false);
   const [keyModal, setKeyModal] = useState(false);
@@ -55,6 +55,19 @@ export default function PlayScreen() {
       key: preferences.selectedKey,
       note,
     });
+  };
+
+  const handleLongPressPlay = (note: NoteCode) => {
+    triggerPlay({
+      instrument: preferences.selectedInstrument,
+      key: preferences.selectedKey,
+      note,
+      loop: true,
+    });
+  };
+
+  const handleRelease = () => {
+    stopPlay();
   };
 
   const handleSaveBackend = (url: string) => {
@@ -92,7 +105,14 @@ export default function PlayScreen() {
             <ThemedText type="small" themeColor="textSecondary" style={styles.sectionLabel}>
               点击演奏
             </ThemedText>
-            <NoteButtonGrid notes={notes} pendingNote={pendingNote} onPressNote={handlePlay} />
+            <NoteButtonGrid
+              notes={notes}
+              pendingNote={pendingNote}
+              onPressNote={handlePlay}
+              sustainEnabled={preferences.selectedInstrument === 'suona'}
+              onLongPressNote={handleLongPressPlay}
+              onReleaseNote={handleRelease}
+            />
           </View>
 
           <PlayFeedback phase={phase} recent={recent} errorMessage={errorMessage} />
