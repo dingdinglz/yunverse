@@ -47,11 +47,11 @@ export const EMPTY_PLACEHOLDER = "—";
 export const HISTORY_LIMIT = 50;
 
 /** 轮询间隔（web-frontend.md §8.2） */
-export const STATE_POLL_MS = 1000;
-export const HISTORY_POLL_MS = 3000;
+export const STATE_POLL_MS = 3000;
+export const HISTORY_POLL_MS = 5000;
 
 /** 请求超时（web-frontend.md §6.5，所有请求应设超时） */
-export const REQUEST_TIMEOUT_MS = 4000;
+export const REQUEST_TIMEOUT_MS = 10000;
 
 export const DEFAULT_TECHNIQUE_LIST: CodeName[] = Object.entries(
   DEFAULT_TECHNIQUES,
