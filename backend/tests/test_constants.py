@@ -38,5 +38,5 @@ def test_validators_and_order():
     # 顺序严格对齐 api.md §2.6
     assert KEYS[0] == "C" and KEYS[1] == "C#" and KEYS[-1] == "B"
     assert len(KEYS) == 17
-    assert [n["code"] for n in NOTES][-1] == "do_high"
-    assert len(NOTES) == 8
+    assert [n["code"] for n in NOTES][-1] == "xi"
+    assert len(NOTES) == 7

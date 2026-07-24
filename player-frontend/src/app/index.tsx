@@ -29,7 +29,7 @@ export default function PlayScreen() {
 
   const baseUrl = preferences.backendBaseUrl;
   const { status, retry } = useConnection(baseUrl);
-  const { instruments, keys, notes, refresh } = useConfig(baseUrl);
+  const { instruments, keys, notes, refresh } = useConfig(baseUrl, preferences.selectedInstrument);
   const { phase, pendingNote, recent, errorMessage, triggerPlay } = usePlay(baseUrl);
 
   const [instrumentModal, setInstrumentModal] = useState(false);

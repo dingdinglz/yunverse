@@ -41,6 +41,7 @@ export interface ConfigData {
   instruments: Instrument[];
   keys: KeySignature[];
   notes: NoteButton[];
+  notesByInstrument?: Record<string, NoteButton[]>;
   techniques: Technique[];
 }
 

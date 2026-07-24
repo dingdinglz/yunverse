@@ -3,18 +3,22 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import type { NoteButton, NoteCode } from '@/types/domain';
+import type { NoteButton, NoteCode, NoteRegister } from '@/types/domain';
 
 interface NoteButtonGridProps {
   notes: NoteButton[];
-  /** 正在发送请求的音符（用于按钮短暂 loading，不全局禁用）。 */
   pendingNote: NoteCode | null;
   onPressNote: (note: NoteCode) => void;
 }
 
 const COLUMNS = 4;
+const REGISTERS: NoteRegister[] = ['low', 'normal', 'high'];
+const REGISTER_LABELS: Record<NoteRegister, string> = {
+  low: '低音',
+  normal: '正常',
+  high: '高音',
+};
 
-/** 将音符按 COLUMNS 分行，末行用 null 占位以保持按钮等宽。 */
 function chunkIntoRows(notes: NoteButton[]): (NoteButton | null)[][] {
   const rows: (NoteButton | null)[][] = [];
   for (let i = 0; i < notes.length; i += COLUMNS) {
@@ -27,15 +31,22 @@ function chunkIntoRows(notes: NoteButton[]): (NoteButton | null)[][] {
   return rows;
 }
 
-/**
- * 音符按钮网格（mobile-client.md §6.5 / §8.4 / §10）。
- * - 大按钮、两行布局、足够间距，避免误触。
- * - 点击轻量反馈（按下缩放 + 高亮）。
- * - 被点按钮显示短暂 loading，不全局禁用其他按钮，保证演奏手感。
- */
-export function NoteButtonGrid({ notes, pendingNote, onPressNote }: NoteButtonGridProps) {
-  const rows = chunkIntoRows(notes);
+function hasMultipleRegisters(notes: NoteButton[]): boolean {
+  const registers = new Set(notes.map((n) => n.register).filter(Boolean));
+  return registers.size > 1;
+}
 
+export function NoteButtonGrid({ notes, pendingNote, onPressNote }: NoteButtonGridProps) {
+  if (hasMultipleRegisters(notes)) {
+    return (
+      <RegisterGrid notes={notes} pendingNote={pendingNote} onPressNote={onPressNote} />
+    );
+  }
+  return <ClassicGrid notes={notes} pendingNote={pendingNote} onPressNote={onPressNote} />;
+}
+
+function ClassicGrid({ notes, pendingNote, onPressNote }: NoteButtonGridProps) {
+  const rows = chunkIntoRows(notes);
   return (
     <View style={styles.grid}>
       {rows.map((row, rowIndex) => (
@@ -52,6 +63,43 @@ export function NoteButtonGrid({ notes, pendingNote, onPressNote }: NoteButtonGr
               <View key={`spacer-${colIndex}`} style={styles.spacer} />
             ),
           )}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function RegisterGrid({ notes, pendingNote, onPressNote }: NoteButtonGridProps) {
+  const theme = useTheme();
+  const columns = REGISTERS.map((reg) => notes.filter((n) => n.register === reg));
+  const maxRows = Math.max(...columns.map((col) => col.length));
+
+  return (
+    <View style={styles.grid}>
+      <View style={styles.row}>
+        {REGISTERS.map((reg) => (
+          <View key={reg} style={styles.headerCell}>
+            <ThemedText type="small" themeColor="textSecondary">
+              {REGISTER_LABELS[reg]}
+            </ThemedText>
+          </View>
+        ))}
+      </View>
+      {Array.from({ length: maxRows }, (_, rowIdx) => (
+        <View key={rowIdx} style={styles.row}>
+          {columns.map((col, colIdx) => {
+            const note = col[rowIdx];
+            return note ? (
+              <NoteButtonItem
+                key={note.code}
+                note={note}
+                pending={pendingNote === note.code}
+                onPress={() => onPressNote(note.code)}
+              />
+            ) : (
+              <View key={`empty-${colIdx}-${rowIdx}`} style={styles.spacer} />
+            );
+          })}
         </View>
       ))}
     </View>
@@ -93,17 +141,22 @@ function NoteButtonItem({ note, pending, onPress }: NoteButtonItemProps) {
 
 const styles = StyleSheet.create({
   grid: {
-    gap: Spacing.three,
+    gap: Spacing.two,
   },
   row: {
     flexDirection: 'row',
-    gap: Spacing.three,
+    gap: Spacing.two,
+  },
+  headerCell: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: Spacing.half,
   },
   button: {
     flex: 1,
-    minHeight: 84,
+    minHeight: 56,
     borderWidth: 1,
-    borderRadius: Spacing.three,
+    borderRadius: Spacing.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -111,7 +164,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 22,
+    lineHeight: 28,
   },
 });

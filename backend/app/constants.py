@@ -26,20 +26,35 @@ _KEYS_SET = set(KEYS)
 
 
 # ---------------------------------------------------------------------------
-# 音符 (api.md §2.7) —— code, label, degree
+# 音符 (api.md §2.7) —— code, label, degree, register
 # ---------------------------------------------------------------------------
-# 注意 do_high 的展示 label 仍为 "do"
-NOTES: list[dict] = [
-    {"code": "do", "label": "do", "degree": 1},
-    {"code": "ri", "label": "ri", "degree": 2},
-    {"code": "mi", "label": "mi", "degree": 3},
-    {"code": "fa", "label": "fa", "degree": 4},
-    {"code": "so", "label": "so", "degree": 5},
-    {"code": "la", "label": "la", "degree": 6},
-    {"code": "xi", "label": "xi", "degree": 7},
-    {"code": "do_high", "label": "do", "degree": 8},
+_NOTE_NAMES = ["do", "ri", "mi", "fa", "so", "la", "xi"]
+
+GUITAR_NOTES: list[dict] = [
+    {"code": name, "label": name, "degree": i, "register": "normal"}
+    for i, name in enumerate(_NOTE_NAMES, 1)
 ]
-_NOTE_BY_CODE: dict[str, dict] = {n["code"]: n for n in NOTES}
+
+PIPA_NOTES: list[dict] = [
+    *[{"code": f"{name}_low", "label": name, "degree": i, "register": "low"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    {"code": "do_high", "label": "do", "degree": 1, "register": "high"},
+]
+
+INSTRUMENT_NOTES: dict[str, list[dict]] = {
+    "guitar": GUITAR_NOTES,
+    "pipa": PIPA_NOTES,
+}
+
+NOTES: list[dict] = GUITAR_NOTES
+
+_NOTE_BY_CODE: dict[str, dict] = {
+    n["code"]: n
+    for notes in INSTRUMENT_NOTES.values()
+    for n in notes
+}
 
 
 # ---------------------------------------------------------------------------

@@ -38,7 +38,10 @@ def test_config(client):
     assert all(i["enabled"] for i in data["instruments"])
     assert data["keys"][0] == "C"
     assert len(data["keys"]) == 17
-    assert [n["code"] for n in data["notes"]][-1] == "do_high"
+    assert [n["code"] for n in data["notes"]][-1] == "xi"
+    assert "notesByInstrument" in data
+    assert len(data["notesByInstrument"]["pipa"]) == 15
+    assert len(data["notesByInstrument"]["guitar"]) == 7
     assert data["techniques"][0]["code"] == "normal"
 
 

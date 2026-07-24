@@ -9,7 +9,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 
 from . import SERVICE_NAME, SERVICE_VERSION
-from .constants import INSTRUMENTS, KEYS, NOTES
+from .constants import INSTRUMENTS, INSTRUMENT_NOTES, KEYS, NOTES
 from .envelope import ApiError, iso_now, new_request_id, success_body
 from .schemas import PlayRequest, RingGestureRequest
 
@@ -48,6 +48,13 @@ async def get_config(request: Request):
                 {"code": n["code"], "label": n["label"], "degree": n["degree"]}
                 for n in NOTES
             ],
+            "notesByInstrument": {
+                inst: [
+                    {"code": n["code"], "label": n["label"], "degree": n["degree"], "register": n["register"]}
+                    for n in notes
+                ]
+                for inst, notes in INSTRUMENT_NOTES.items()
+            },
             "techniques": registry.list(),
         }
     )
