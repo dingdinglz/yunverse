@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.playerfrontend"
+      "package": "com.anonymous.playerfrontend",
+      "minSdkVersion": 31
     },
     "web": {
       "output": "static",
@@ -33,7 +34,8 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "./modules/rokid-cxr/app.plugin"
     ],
     "experiments": {
       "typedRoutes": true,

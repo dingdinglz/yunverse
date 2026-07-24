@@ -1,0 +1,27 @@
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
+
+version = '1.0.0'
+
+android {
+    namespace "expo.modules.rokidcxr"
+    compileSdk 36
+
+    defaultConfig {
+        minSdk 31
+        versionCode 1
+        versionName '1.0.0'
+    }
+}
+
+repositories {
+    maven {
+        url "https://maven.rokid.com/repository/maven-public/"
+    }
+}
+
+dependencies {
+    implementation "com.rokid.cxr:client-l:1.0.4"
+}

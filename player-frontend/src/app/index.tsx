@@ -13,6 +13,7 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useConfig } from '@/hooks/use-config';
 import { useConnection } from '@/hooks/use-connection';
+import { useCxrInit } from '@/hooks/use-cxr-init';
 import { usePlay } from '@/hooks/use-play';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
@@ -23,6 +24,7 @@ import type { InstrumentCode, KeySignature, NoteCode } from '@/types/domain';
  * 见 mobile-client.md §4 / §6.2 / §8。
  */
 export default function PlayScreen() {
+  useCxrInit();
   const theme = useTheme();
   const { preferences, loaded, setBackendBaseUrl, setSelectedInstrument, setSelectedKey } =
     usePreferences();
