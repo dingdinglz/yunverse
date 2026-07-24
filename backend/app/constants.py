@@ -12,6 +12,7 @@ from __future__ import annotations
 INSTRUMENTS: dict[str, str] = {
     "guitar": "吉他",
     "pipa": "琵琶",
+    "suona": "唢呐",
 }
 
 
@@ -43,9 +44,17 @@ PIPA_NOTES: list[dict] = [
     {"code": "do_high", "label": "do", "degree": 1, "register": "high"},
 ]
 
+SUONA_NOTES: list[dict] = [
+    *[{"code": f"{name}_low", "label": name, "degree": i, "register": "low"}
+      for i, name in enumerate(_NOTE_NAMES[4:], 5)],
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES[:6], 1)],
+]
+
 INSTRUMENT_NOTES: dict[str, list[dict]] = {
     "guitar": GUITAR_NOTES,
     "pipa": PIPA_NOTES,
+    "suona": SUONA_NOTES,
 }
 
 NOTES: list[dict] = GUITAR_NOTES

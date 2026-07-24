@@ -8,4 +8,5 @@ import type { Instrument } from '@/types/domain';
 export const INSTRUMENTS: Instrument[] = [
   { code: 'guitar', name: '吉他', enabled: true },
   { code: 'pipa', name: '琵琶', enabled: true },
+  { code: 'suona', name: '唢呐', enabled: true },
 ];

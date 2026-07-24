@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: Spacing.four,
     borderTopRightRadius: Spacing.four,
     maxHeight: '75%',
+    minHeight: 280,
     overflow: 'hidden',
   },
   handleRow: {
@@ -127,7 +128,8 @@ const styles = StyleSheet.create({
     lineHeight: 30,
   },
   list: {
-    flexGrow: 0,
+    flexGrow: 1,
+    flexShrink: 1,
   },
   listContent: {
     paddingHorizontal: Spacing.three,

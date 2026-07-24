@@ -71,13 +71,15 @@ function ClassicGrid({ notes, pendingNote, onPressNote }: NoteButtonGridProps) {
 
 function RegisterGrid({ notes, pendingNote, onPressNote }: NoteButtonGridProps) {
   const theme = useTheme();
-  const columns = REGISTERS.map((reg) => notes.filter((n) => n.register === reg));
+  const allColumns = REGISTERS.map((reg) => notes.filter((n) => n.register === reg));
+  const activeRegisters = REGISTERS.filter((_, i) => allColumns[i].length > 0);
+  const columns = activeRegisters.map((reg) => notes.filter((n) => n.register === reg));
   const maxRows = Math.max(...columns.map((col) => col.length));
 
   return (
     <View style={styles.grid}>
       <View style={styles.row}>
-        {REGISTERS.map((reg) => (
+        {activeRegisters.map((reg) => (
           <View key={reg} style={styles.headerCell}>
             <ThemedText type="small" themeColor="textSecondary">
               {REGISTER_LABELS[reg]}

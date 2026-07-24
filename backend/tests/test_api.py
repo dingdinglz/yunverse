@@ -34,7 +34,7 @@ def test_config(client):
     b = client.get("/api/v1/config").json()
     assert b["success"] is True
     data = b["data"]
-    assert [i["code"] for i in data["instruments"]] == ["guitar", "pipa"]
+    assert [i["code"] for i in data["instruments"]] == ["guitar", "pipa", "suona"]
     assert all(i["enabled"] for i in data["instruments"])
     assert data["keys"][0] == "C"
     assert len(data["keys"]) == 17
@@ -42,6 +42,7 @@ def test_config(client):
     assert "notesByInstrument" in data
     assert len(data["notesByInstrument"]["pipa"]) == 15
     assert len(data["notesByInstrument"]["guitar"]) == 7
+    assert len(data["notesByInstrument"]["suona"]) == 9
     assert data["techniques"][0]["code"] == "normal"
 
 
