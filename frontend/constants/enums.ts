@@ -51,7 +51,7 @@ export const STATE_POLL_MS = 3000;
 export const HISTORY_POLL_MS = 5000;
 
 /** 请求超时（web-frontend.md §6.5，所有请求应设超时） */
-export const REQUEST_TIMEOUT_MS = 10000;
+export const REQUEST_TIMEOUT_MS = 60000;
 
 export const DEFAULT_TECHNIQUE_LIST: CodeName[] = Object.entries(
   DEFAULT_TECHNIQUES,
