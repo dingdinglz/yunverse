@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { AppError, unknownError } from '@/services/errors';
-import { play } from '@/services/play-service';
+import { play, stopPlay as stopPlayApi } from '@/services/play-service';
 import type { PlayData, PlayRequest } from '@/types/api';
 import type { NoteCode } from '@/types/domain';
 
@@ -53,5 +53,13 @@ export function usePlay(baseUrl: string) {
     [baseUrl],
   );
 
-  return { phase, pendingNote, recent, errorMessage, triggerPlay };
+  const stopPlay = useCallback(async () => {
+    try {
+      await stopPlayApi(baseUrl);
+    } catch {
+      // best-effort
+    }
+  }, [baseUrl]);
+
+  return { phase, pendingNote, recent, errorMessage, triggerPlay, stopPlay };
 }

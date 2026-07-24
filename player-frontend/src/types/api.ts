@@ -50,6 +50,7 @@ export interface PlayRequest {
   instrument: InstrumentCode;
   key: KeySignature;
   note: NoteCode;
+  loop?: boolean;
 }
 
 /** /play 响应中乐器对象，见 api.md §6.4。 */

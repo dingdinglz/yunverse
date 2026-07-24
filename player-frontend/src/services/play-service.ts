@@ -20,3 +20,8 @@ export function getConfig(baseUrl: string): Promise<ConfigData> {
 export function play(baseUrl: string, payload: PlayRequest): Promise<PlayData> {
   return request<PlayData>(baseUrl, '/play', { method: 'POST', body: payload });
 }
+
+/** POST /api/v1/play/stop —— 停止当前播放。 */
+export function stopPlay(baseUrl: string): Promise<{ stopped: boolean }> {
+  return request<{ stopped: boolean }>(baseUrl, '/play/stop', { method: 'POST' });
+}

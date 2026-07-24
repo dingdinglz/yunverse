@@ -56,7 +56,7 @@ class Orchestrator:
         self._playback = playback
         self._state = state_store
 
-    async def play(self, instrument: str, key: str, note: str) -> dict:
+    async def play(self, instrument: str, key: str, note: str, loop: bool = False) -> dict:
         # 1. 参数校验
         _validate(instrument, key, note)
 
@@ -67,7 +67,7 @@ class Orchestrator:
         audio = self._audio.resolve(instrument, key, note, technique_obj["code"])
 
         # 4. 提交播放（同步确认、异步播放；设备不可用/失败抛错）
-        submitted_at = await self._playback.submit(audio["abs"])
+        submitted_at = await self._playback.submit(audio["abs"], loop=loop)
 
         # 5. 组装事件 + 记录状态/历史
         event_id = new_event_id()
