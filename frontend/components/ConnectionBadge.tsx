@@ -1,4 +1,5 @@
 import type { ConnectionStatus } from "@/types/domain";
+import type { RingConnection } from "@/types/ring";
 
 const CONFIG: Record<
   ConnectionStatus,
@@ -36,8 +37,10 @@ const CONFIG: Record<
 
 export default function ConnectionBadge({
   status,
+  label,
 }: {
-  status: ConnectionStatus;
+  status: ConnectionStatus | RingConnection;
+  label?: string;
 }) {
   const c = CONFIG[status];
   return (
@@ -47,7 +50,7 @@ export default function ConnectionBadge({
       aria-live="polite"
     >
       <span className={`h-2.5 w-2.5 rounded-full ${c.dot}`} aria-hidden />
-      {c.label}
+      {label ? `${label} ${c.label}` : c.label}
     </span>
   );
 }

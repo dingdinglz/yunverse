@@ -136,24 +136,23 @@ export default function RingTestPanel({
       ) : (
         <>
           {/* 实时 IMU — XYZ 三轴曲线 */}
-          {hasImu ? (
-            <div className="flex flex-col gap-4">
-              <ImuChart
-                data={imu}
-                getChannels={(p) => [p.ax, p.ay, p.az]}
-                label="加速度"
-              />
-              <ImuChart
-                data={imu}
-                getChannels={(p) => [p.gx, p.gy, p.gz]}
-                label="陀螺仪"
-              />
-            </div>
-          ) : (
-            <p className="text-sm text-muted">
-              等待 IMU 数据... 若无数据，请单击戒指按键切换到手势模式。
-            </p>
-          )}
+          <div className="flex flex-col gap-4">
+            <ImuChart
+              data={imu}
+              getChannels={(p) => [p.ax, p.ay, p.az]}
+              label="加速度"
+            />
+            <ImuChart
+              data={imu}
+              getChannels={(p) => [p.gx, p.gy, p.gz]}
+              label="陀螺仪"
+            />
+            {!hasImu && (
+              <p className="text-sm text-muted">
+                等待 IMU 数据... 若无数据，请单击戒指按键切换到手势模式。
+              </p>
+            )}
+          </div>
 
           {/* 最近识别结果 */}
           <div className="rounded-xl border border-border bg-surface-muted p-4">

@@ -10,7 +10,7 @@ import SkeletonDashboard from "@/components/SkeletonDashboard";
 import { useDashboardData } from "@/lib/useDashboardData";
 
 export default function Dashboard() {
-  const { state, history, config, connection, lastError, initialLoading } =
+  const { state, history, config, connection, ringConnection, lastError, initialLoading } =
     useDashboardData();
 
   return (
@@ -32,6 +32,7 @@ export default function Dashboard() {
           >
             戒指设置
           </Link>
+          <ConnectionBadge status={ringConnection} label="戒指" />
           <ConnectionBadge status={connection} />
         </div>
       </header>

@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getConfig, getHistory, getState } from "@/lib/services";
+import { getRingStatus } from "@/lib/ringService";
 import { mergeHistory } from "@/lib/format";
 import {
   HISTORY_LIMIT,
@@ -21,12 +22,14 @@ import type {
   CurrentState,
   HistoryItem,
 } from "@/types/domain";
+import type { RingConnection } from "@/types/ring";
 
 export interface DashboardData {
   state: CurrentState | null;
   history: HistoryItem[];
   config: AppConfig | null;
   connection: ConnectionStatus;
+  ringConnection: RingConnection;
   /** 最近一次错误信息（用于 ErrorBanner）；连接恢复后清空 */
   lastError: string | null;
   /** 首屏是否仍在加载（尚未拿到任何一次成功数据） */
@@ -38,6 +41,7 @@ export function useDashboardData(): DashboardData {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [connection, setConnection] = useState<ConnectionStatus>("connecting");
+  const [ringConnection, setRingConnection] = useState<RingConnection>("disconnected");
   const [lastError, setLastError] = useState<string | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -89,6 +93,19 @@ export function useDashboardData(): DashboardData {
     }
   }, [newController, releaseController]);
 
+  // 拉取戒指连接状态
+  const refreshRingStatus = useCallback(async () => {
+    const c = newController();
+    try {
+      const rs = await getRingStatus(c.signal);
+      setRingConnection(rs.connection);
+    } catch {
+      // 戒指状态拉取失败不影响主连接状态
+    } finally {
+      releaseController(c);
+    }
+  }, [newController, releaseController]);
+
   // 拉取配置（用于技法名映射），失败则回退本地默认枚举
   const refreshConfig = useCallback(async () => {
     const c = newController();
@@ -108,20 +125,22 @@ export function useDashboardData(): DashboardData {
 
     // 首屏：并行拉取，结束后关闭初始 loading
     (async () => {
-      await Promise.allSettled([refreshConfig(), refreshState(), refreshHistory()]);
+      await Promise.allSettled([refreshConfig(), refreshState(), refreshHistory(), refreshRingStatus()]);
       setInitialLoading(false);
     })();
 
     stateTimer = setInterval(refreshState, STATE_POLL_MS);
     historyTimer = setInterval(refreshHistory, HISTORY_POLL_MS);
+    const ringTimer = setInterval(refreshRingStatus, HISTORY_POLL_MS);
 
     return () => {
       if (stateTimer) clearInterval(stateTimer);
       if (historyTimer) clearInterval(historyTimer);
+      clearInterval(ringTimer);
       controllers.forEach((c) => c.abort());
       controllers.clear();
     };
-  }, [refreshConfig, refreshState, refreshHistory]);
+  }, [refreshConfig, refreshState, refreshHistory, refreshRingStatus]);
 
-  return { state, history, config, connection, lastError, initialLoading };
+  return { state, history, config, connection, ringConnection, lastError, initialLoading };
 }
