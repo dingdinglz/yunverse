@@ -49,6 +49,7 @@ export interface ImuPoint {
 export interface RingSettings {
   status: RingStatus | null;
   streamOnline: boolean;
+  gestureMethod: "dtw" | "hmm";
   gestures: GestureTemplateInfo[];
   imu: ImuPoint[];
   eventLog: EventLogItem[];
@@ -71,6 +72,7 @@ export interface RingSettings {
 export function useRingSettings(): RingSettings {
   const [status, setStatus] = useState<RingStatus | null>(null);
   const [streamOnline, setStreamOnline] = useState(false);
+  const [gestureMethod, setGestureMethod] = useState<"dtw" | "hmm">("dtw");
   const [gestures, setGestures] = useState<GestureTemplateInfo[]>([]);
   const [imu, setImu] = useState<ImuPoint[]>([]);
   const [eventLog, setEventLog] = useState<EventLogItem[]>([]);
@@ -105,7 +107,8 @@ export function useRingSettings(): RingSettings {
   const refreshGestures = useCallback(async () => {
     const c = newController();
     try {
-      const { gestures: list } = await listGestures(c.signal);
+      const { method, gestures: list } = await listGestures(c.signal);
+      setGestureMethod(method);
       setGestures(list);
     } catch (err) {
       if (!c.signal.aborted && err instanceof ApiClientError) {
@@ -309,6 +312,7 @@ export function useRingSettings(): RingSettings {
   return {
     status,
     streamOnline,
+    gestureMethod,
     gestures,
     imu,
     eventLog,

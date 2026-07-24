@@ -10,6 +10,7 @@ import type { GestureTemplateInfo, RingStatus } from "@/types/ring";
 
 export default function RingGesturePanel({
   gestures,
+  gestureMethod,
   status,
   busy,
   onDelete,
@@ -19,6 +20,7 @@ export default function RingGesturePanel({
   onRepCancel,
 }: {
   gestures: GestureTemplateInfo[];
+  gestureMethod: "dtw" | "hmm";
   status: RingStatus | null;
   busy: boolean;
   onDelete: (name: string) => void;
@@ -39,7 +41,9 @@ export default function RingGesturePanel({
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:p-6">
       <header className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-foreground">配置手势</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          {gestureMethod === "hmm" ? "HMM 手势模型" : "配置手势"}
+        </h2>
         <span className="text-sm text-muted">共 {gestures.length} 个</span>
       </header>
 
@@ -54,28 +58,37 @@ export default function RingGesturePanel({
               <span className="flex flex-col">
                 <span className="text-sm font-medium text-foreground">{g.name}</span>
                 <span className="font-mono text-xs text-muted">
-                  {g.sampleCount} 样本 · 阈值 {g.threshold.toFixed(2)}
+                  {g.type === "hmm"
+                    ? "已训练模型"
+                    : `${g.sampleCount ?? 0} 样本 · 阈值 ${(g.threshold ?? 0).toFixed(2)}`}
                 </span>
               </span>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => onDelete(g.name)}
-                disabled={busy}
-              >
-                删除
-              </Button>
+              {gestureMethod === "dtw" && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => onDelete(g.name)}
+                  disabled={busy}
+                >
+                  删除
+                </Button>
+              )}
             </li>
           ))}
         </ul>
       ) : (
         <EmptyState
-          title="暂无自定义手势"
-          description="连接戒指并切换到手势模式后，即可录制第一个手势。"
+          title={gestureMethod === "hmm" ? "暂无训练模型" : "暂无自定义手势"}
+          description={
+            gestureMethod === "hmm"
+              ? "将 .pkl 模型文件放入 vendor/models/ 目录即可识别。"
+              : "连接戒指并切换到手势模式后，即可录制第一个手势。"
+          }
         />
       )}
 
-      {/* 录制区 */}
+      {/* 录制区（仅 DTW 模式） */}
+      {gestureMethod === "dtw" && (
       <div className="rounded-xl border border-border bg-surface-muted p-4">
         {recording ? (
           <div className="flex flex-col gap-3">
@@ -152,6 +165,7 @@ export default function RingGesturePanel({
           </div>
         )}
       </div>
+      )}
     </section>
   );
 }

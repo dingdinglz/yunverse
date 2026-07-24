@@ -59,6 +59,7 @@ export default function RingSettings() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <RingGesturePanel
           gestures={s.gestures}
+          gestureMethod={s.gestureMethod}
           status={s.status}
           busy={s.busy}
           onDelete={s.removeGesture}

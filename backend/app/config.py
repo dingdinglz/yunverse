@@ -35,14 +35,40 @@ class PlaybackConfig:
 
 
 @dataclass
+class GestureFilterConfig:
+    enabled: bool = True
+    sampleRate: float = 25.0
+    cutoffHz: float = 10.0
+    order: int = 2
+    medianKernel: int = 5
+
+
+@dataclass
+class GestureDtwConfig:
+    thresholdMultiplier: float = 1.5
+    lengthRatioMin: float = 0.4
+    lengthRatioMax: float = 2.5
+
+
+@dataclass
+class GestureHmmConfig:
+    modelDir: str = "vendor/models"
+    nStates: int = 6
+    windowSize: int = 8
+    windowOverlap: int = 4
+
+
+@dataclass
 class GestureConfig:
+    method: str = "dtw"  # "dtw" | "hmm"
     expireMs: int = 1000
     fallbackTechnique: str = "normal"
-    # gestureCode -> techniqueCode（手势→技法映射，默认空 = 全部 normal）
     mapping: dict[str, str] = field(default_factory=dict)
-    # 额外技法定义 code -> 中文名（扩展 api.md §2.8）
     techniques: dict[str, str] = field(default_factory=dict)
     minConfidence: float = 0.0
+    filter: GestureFilterConfig = field(default_factory=GestureFilterConfig)
+    dtw: GestureDtwConfig = field(default_factory=GestureDtwConfig)
+    hmm: GestureHmmConfig = field(default_factory=GestureHmmConfig)
 
 
 @dataclass
@@ -112,6 +138,13 @@ def load_config(path: str | Path | None = None) -> Config:
         _merge(cfg.audio, raw.get("audio", {}))
         _merge(cfg.playback, raw.get("playback", {}))
         _merge(cfg.gesture, raw.get("gesture", {}))
+        gesture_raw = raw.get("gesture", {})
+        if "filter" in gesture_raw:
+            _merge(cfg.gesture.filter, gesture_raw["filter"])
+        if "dtw" in gesture_raw:
+            _merge(cfg.gesture.dtw, gesture_raw["dtw"])
+        if "hmm" in gesture_raw:
+            _merge(cfg.gesture.hmm, gesture_raw["hmm"])
         _merge(cfg.history, raw.get("history", {}))
         _merge(cfg.cors, raw.get("cors", {}))
         _merge(cfg.ring, raw.get("ring", {}))

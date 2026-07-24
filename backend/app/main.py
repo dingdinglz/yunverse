@@ -59,7 +59,7 @@ def create_app(
     orchestrator = Orchestrator(gesture_store, audio, playback, state_store)
 
     ring_enabled = cfg.ring.enabled if start_ring is None else start_ring
-    ring_manager = RingManager(gesture_store)
+    ring_manager = RingManager(gesture_store, gesture_config=cfg.gesture)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):

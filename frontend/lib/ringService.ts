@@ -42,8 +42,8 @@ export function disconnectRing(signal?: AbortSignal): Promise<RingStatus> {
 
 export function listGestures(
   signal?: AbortSignal,
-): Promise<{ gestures: GestureTemplateInfo[] }> {
-  return apiGet<{ gestures: GestureTemplateInfo[] }>("/ring/gestures", { signal });
+): Promise<{ method: "dtw" | "hmm"; gestures: GestureTemplateInfo[] }> {
+  return apiGet<{ method: "dtw" | "hmm"; gestures: GestureTemplateInfo[] }>("/ring/gestures", { signal });
 }
 
 export function deleteGesture(

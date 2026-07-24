@@ -66,35 +66,31 @@ async def ring_disconnect(request: Request):
 @router.get("/gestures")
 async def ring_gestures(request: Request):
     manager = _manager(request)
-    return success_body({"gestures": manager.list_gestures()})
+    return success_body({"method": manager._method, "gestures": manager.list_gestures()})
 
 
 @router.post("/gestures/record/start")
 async def ring_record_start(request: Request, body: RecordStartRequest):
     manager = _manager(request)
-    data = await asyncio.to_thread(manager.start_recording, body.name, body.reps)
-    return success_body(data)
+    return success_body(manager.start_recording(body.name, body.reps))
 
 
 @router.post("/gestures/record/rep/start")
 async def ring_record_rep_start(request: Request):
     manager = _manager(request)
-    data = await asyncio.to_thread(manager.rep_start)
-    return success_body(data)
+    return success_body(manager.rep_start())
 
 
 @router.post("/gestures/record/rep/stop")
 async def ring_record_rep_stop(request: Request):
     manager = _manager(request)
-    data = await asyncio.to_thread(manager.rep_stop)
-    return success_body(data)
+    return success_body(manager.rep_stop())
 
 
 @router.post("/gestures/record/cancel")
 async def ring_record_cancel(request: Request):
     manager = _manager(request)
-    data = await asyncio.to_thread(manager.cancel_recording)
-    return success_body(data)
+    return success_body(manager.cancel_recording())
 
 
 @router.delete("/gestures/{name}")

@@ -2,7 +2,20 @@
 
 from __future__ import annotations
 
+from typing import Protocol
+
 import numpy as np
+
+
+class BaseRecognizer(Protocol):
+    """手势识别器统一协议，DTW 和 HMM 都实现此接口。"""
+
+    enabled: bool
+    templates: dict
+
+    def feed(self, samples: list[list[int]]) -> tuple[str, float] | None: ...
+    def add_template(self, template) -> None: ...
+    def remove_template(self, name: str) -> None: ...
 
 
 def preprocess(sequence: np.ndarray) -> np.ndarray:

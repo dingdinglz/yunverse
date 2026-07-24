@@ -55,9 +55,11 @@ class RingManager:
         self,
         gesture_store: GestureStore,
         vendor_dir: Path = VENDOR_DIR,
+        gesture_config: Any = None,
     ):
         self._gesture = gesture_store
         self._vendor_dir = Path(vendor_dir)
+        self._gesture_config = gesture_config
 
         self._lock = threading.Lock()
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -105,7 +107,7 @@ class RingManager:
             return self._loop
 
     def _ensure_gestures(self) -> None:
-        """加载仅需 numpy 的手势模块与识别器（列表/删除/录制用，不需 bleak）。"""
+        """根据配置加载 DTW 或 HMM 识别器。"""
         if self._recognizer is not None:
             return
         for p in (str(self._vendor_dir), str(self._vendor_dir / "ring_sound_SDK")):
@@ -119,12 +121,53 @@ class RingManager:
             raise ApiError("RING_UNAVAILABLE", f"手势依赖不可用: {exc}")
         gs.GESTURES_DIR = self._vendor_dir / "gestures"
         self._np, self._ge, self._gs = np, ge, gs
-        recognizer = ge.GestureRecognizer()
-        for template in gs.load_all_gestures().values():
-            recognizer.add_template(template)
+
+        method = "dtw"
+        if self._gesture_config is not None:
+            method = getattr(self._gesture_config, "method", "dtw")
+
+        if method == "hmm":
+            self._recognizer = self._create_hmm_recognizer()
+        else:
+            recognizer = ge.GestureRecognizer()
+            for template in gs.load_all_gestures().values():
+                recognizer.add_template(template)
+            recognizer.enabled = self._recognition_enabled
+            self._recognizer = recognizer
+
+        logger.info("识别方法=%s, 模板/模型数=%d", method, len(self._recognizer.templates))
+
+    def _create_hmm_recognizer(self):
+        from signal_filter import SignalFilter
+        from feature_extractor import FeatureExtractor
+        from hmm_engine import HMMRecognizer
+
+        cfg = self._gesture_config
+        filter_cfg = getattr(cfg, "filter", None)
+        hmm_cfg = getattr(cfg, "hmm", None)
+
+        sf = SignalFilter(
+            sample_rate=getattr(filter_cfg, "sampleRate", 25.0) if filter_cfg else 25.0,
+            cutoff_hz=getattr(filter_cfg, "cutoffHz", 10.0) if filter_cfg else 10.0,
+            order=getattr(filter_cfg, "order", 2) if filter_cfg else 2,
+            median_kernel=getattr(filter_cfg, "medianKernel", 5) if filter_cfg else 5,
+        )
+        fe = FeatureExtractor(
+            window_size=getattr(hmm_cfg, "windowSize", 8) if hmm_cfg else 8,
+            overlap=getattr(hmm_cfg, "windowOverlap", 4) if hmm_cfg else 4,
+        )
+        model_dir = self._vendor_dir / (getattr(hmm_cfg, "modelDir", "models") if hmm_cfg else "models")
+        if not model_dir.is_absolute():
+            model_dir = self._vendor_dir.parent / getattr(hmm_cfg, "modelDir", "vendor/models")
+
+        recognizer = HMMRecognizer(
+            model_dir=model_dir,
+            signal_filter=sf,
+            feature_extractor=fe,
+            min_confidence=getattr(cfg, "minConfidence", 0.0),
+        )
         recognizer.enabled = self._recognition_enabled
-        self._recognizer = recognizer
-        logger.info("已加载 %d 个手势模板", len(recognizer.templates))
+        return recognizer
 
     def _ensure_vendor(self) -> None:
         """加载完整 SDK（含 bleak）。仅在扫描/连接等需要真机时调用。"""
@@ -202,19 +245,32 @@ class RingManager:
             "gestureCount": gesture_count,
         }
 
+    @property
+    def _method(self) -> str:
+        if self._gesture_config is not None:
+            return getattr(self._gesture_config, "method", "dtw")
+        return "dtw"
+
     def list_gestures(self) -> list[dict]:
         self._ensure_gestures()
-        return [
-            {
-                "name": name,
-                "sampleCount": len(t.repetitions),
-                "threshold": float(t.threshold),
-            }
-            for name, t in self._recognizer.templates.items()
-        ]
+        method = self._method
+        result = []
+        for name, t in self._recognizer.templates.items():
+            if method == "hmm":
+                result.append({"name": name, "type": "hmm"})
+            else:
+                result.append({
+                    "name": name,
+                    "type": "dtw",
+                    "sampleCount": len(t.repetitions),
+                    "threshold": float(t.threshold),
+                })
+        return result
 
     def delete_gesture(self, name: str) -> dict:
         self._ensure_gestures()
+        if self._method == "hmm":
+            raise ApiError("INVALID_OPERATION", "HMM 模式下不支持删除手势模型")
         ok = self._gs.delete_gesture(name)
         if not ok:
             raise ApiError("GESTURE_NOT_FOUND", f"手势不存在: {name}")
@@ -612,6 +668,8 @@ class RingManager:
             raise ApiError("RING_NOT_CONNECTED", "戒指未连接")
 
     def start_recording(self, name: str, reps: int) -> dict:
+        if self._method == "hmm":
+            raise ApiError("INVALID_OPERATION", "HMM 模式下不支持录制手势")
         name = (name or "").strip()
         if not name:
             raise ApiError("INVALID_PARAMETER", "手势名称不能为空", {"field": "name"})
@@ -621,9 +679,9 @@ class RingManager:
                 "重复次数需在 2 到 20 之间",
                 {"field": "reps", "value": reps},
             )
-        return self._run(self._start_recording(name, reps))
+        return self._do_start_recording(name, reps)
 
-    async def _start_recording(self, name: str, reps: int) -> dict:
+    def _do_start_recording(self, name: str, reps: int) -> dict:
         self._require_connected()
         if self._mode != "gesture":
             raise ApiError("RING_BUSY", "戒指不在手势模式，请单击戒指按键切换")
@@ -641,9 +699,6 @@ class RingManager:
         return {"state": "recording", **(self._recording_dict() or {})}
 
     def rep_start(self) -> dict:
-        return self._run(self._rep_start())
-
-    async def _rep_start(self) -> dict:
         self._require_connected()
         rec = self._rec
         if rec is None:
@@ -656,9 +711,6 @@ class RingManager:
         return {"state": "rep_recording", **(self._recording_dict() or {})}
 
     def rep_stop(self) -> dict:
-        return self._run(self._rep_stop())
-
-    async def _rep_stop(self) -> dict:
         self._require_connected()
         rec = self._rec
         if rec is None or not rec["active"]:
@@ -719,9 +771,6 @@ class RingManager:
         return done
 
     def cancel_recording(self) -> dict:
-        return self._run(self._cancel_recording())
-
-    async def _cancel_recording(self) -> dict:
         self._rec = None
         self._publish("recording", {"state": "cancelled"})
         return {"state": "cancelled"}

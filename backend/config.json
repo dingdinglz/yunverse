@@ -12,11 +12,30 @@
     "maxQueue": 32
   },
   "gesture": {
+    "method": "hmm",
     "expireMs": 1000,
     "fallbackTechnique": "normal",
     "mapping": {},
     "techniques": {},
-    "minConfidence": 0.0
+    "minConfidence": 0.0,
+    "filter": {
+      "enabled": true,
+      "sampleRate": 25,
+      "cutoffHz": 10,
+      "order": 2,
+      "medianKernel": 5
+    },
+    "dtw": {
+      "thresholdMultiplier": 1.5,
+      "lengthRatioMin": 0.4,
+      "lengthRatioMax": 2.5
+    },
+    "hmm": {
+      "modelDir": "vendor/models",
+      "nStates": 6,
+      "windowSize": 8,
+      "windowOverlap": 4
+    }
   },
   "history": {
     "maxSize": 100

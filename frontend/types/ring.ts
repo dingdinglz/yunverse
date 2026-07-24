@@ -45,8 +45,9 @@ export interface RingDevice {
 /** GET /api/v1/ring/gestures -> data.gestures[] */
 export interface GestureTemplateInfo {
   name: string;
-  sampleCount: number;
-  threshold: number;
+  type: "dtw" | "hmm";
+  sampleCount?: number;
+  threshold?: number;
 }
 
 /** 一个 IMU 采样：[ax, ay, az, gx, gy, gz]（int16） */
