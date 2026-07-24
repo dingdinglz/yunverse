@@ -1,7 +1,7 @@
 """播放执行模块 (backend.md §5.5 / §10)。
 
-设计：同步确认、异步播放。submit() 只把任务放入串行队列即返回，
-真正的 WAV 播放由后台 worker 逐个执行，避免阻塞 HTTP 请求。
+设计：打断模式。新音触发时立即终止当前播放并启动新播放，
+保证演奏手感即时响应。
 macOS 使用 afplay；测试/无设备用 MockPlayer。
 """
 
@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 class Player(Protocol):
     def available(self) -> bool: ...
     async def play(self, path: Path) -> None: ...
+    def stop(self) -> None: ...
 
 
 class AfplayPlayer:
@@ -30,18 +31,25 @@ class AfplayPlayer:
     def __init__(self, binary: str = "afplay"):
         self._binary = binary
         self._resolved = shutil.which(binary)
+        self._proc: asyncio.subprocess.Process | None = None
 
     def available(self) -> bool:
         return self._resolved is not None
 
+    def stop(self) -> None:
+        if self._proc is not None and self._proc.returncode is None:
+            self._proc.kill()
+            self._proc = None
+
     async def play(self, path: Path) -> None:
-        proc = await asyncio.create_subprocess_exec(
+        self._proc = await asyncio.create_subprocess_exec(
             self._resolved or self._binary,
             str(path),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        await proc.wait()
+        await self._proc.wait()
+        self._proc = None
 
 
 class MockPlayer:
@@ -53,30 +61,31 @@ class MockPlayer:
     def available(self) -> bool:
         return True
 
+    def stop(self) -> None:
+        pass
+
     async def play(self, path: Path) -> None:
         self.played.append(Path(path))
 
 
 class PlaybackExecutor:
-    def __init__(self, player: Player, max_queue: int = 32, device: str = "default"):
+    def __init__(self, player: Player, device: str = "default"):
         self._player = player
-        self._max_queue = max_queue
         self._device = device
-        self._queue: asyncio.Queue[Path] | None = None
-        self._task: asyncio.Task | None = None
+        self._current_task: asyncio.Task | None = None
 
     async def start(self) -> None:
-        self._queue = asyncio.Queue(maxsize=self._max_queue)
-        self._task = asyncio.create_task(self._worker(), name="playback-worker")
+        pass
 
     async def stop(self) -> None:
-        if self._task is not None:
-            self._task.cancel()
+        self._player.stop()
+        if self._current_task is not None:
+            self._current_task.cancel()
             try:
-                await self._task
+                await self._current_task
             except asyncio.CancelledError:
                 pass
-            self._task = None
+            self._current_task = None
 
     def check_device(self) -> None:
         if not self._player.available():
@@ -87,25 +96,22 @@ class PlaybackExecutor:
             )
 
     async def submit(self, path: Path) -> str:
-        """提交一次播放任务，返回 submittedAt (ISO)。快速返回，不等待播放完成。"""
+        """打断当前播放并立即播放新音频，返回 submittedAt (ISO)。"""
         self.check_device()
-        if self._queue is None:
-            raise ApiError("PLAYBACK_FAILED", "播放执行器未启动")
-        try:
-            self._queue.put_nowait(Path(path))
-        except asyncio.QueueFull:
-            raise ApiError("PLAYBACK_FAILED", "播放队列已满，请稍后重试")
+        self._player.stop()
+        if self._current_task is not None:
+            self._current_task.cancel()
+            try:
+                await self._current_task
+            except asyncio.CancelledError:
+                pass
+        self._current_task = asyncio.create_task(self._do_play(path))
         return iso_now()
 
-    async def _worker(self) -> None:
-        assert self._queue is not None
-        while True:
-            path = await self._queue.get()
-            try:
-                await self._player.play(path)
-            except asyncio.CancelledError:
-                raise
-            except Exception as exc:  # 播放失败不影响主链路，仅记录
-                logger.error("播放失败 %s: %s", path, exc)
-            finally:
-                self._queue.task_done()
+    async def _do_play(self, path: Path) -> None:
+        try:
+            await self._player.play(path)
+        except asyncio.CancelledError:
+            self._player.stop()
+        except Exception as exc:
+            logger.error("播放失败 %s: %s", path, exc)

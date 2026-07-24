@@ -53,7 +53,6 @@ def create_app(
     audio = AudioResource(cfg.audio_root, root_name=Path(cfg.audio.rootDir).name or "audio")
     playback = PlaybackExecutor(
         player or AfplayPlayer(),
-        max_queue=cfg.playback.maxQueue,
         device=cfg.playback.device,
     )
     state_store = StateStore(max_size=cfg.history.maxSize)
