@@ -21,3 +21,21 @@ class RingGestureRequest(BaseModel):
     gestureCode: str
     timestamp: str
     confidence: float | None = None
+
+
+# --- 戒指设置页（连接/录制/测试） ---------------------------------------
+class ScanRequest(BaseModel):
+    timeoutS: float | None = None
+
+
+class ConnectRequest(BaseModel):
+    address: str
+
+
+class RecordStartRequest(BaseModel):
+    name: str
+    reps: int = 5
+
+
+class RecognitionRequest(BaseModel):
+    enabled: bool

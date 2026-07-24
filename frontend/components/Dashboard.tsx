@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import ConnectionBadge from "@/components/ConnectionBadge";
 import CurrentStateCards from "@/components/CurrentStateCards";
 import ErrorBanner from "@/components/ErrorBanner";
@@ -23,7 +25,15 @@ export default function Dashboard() {
             实时监控当前演奏状态与历史记录
           </p>
         </div>
-        <ConnectionBadge status={connection} />
+        <div className="flex items-center gap-3">
+          <Link
+            href="/settings"
+            className="rounded-lg border border-border bg-surface px-3.5 py-1.5 text-sm font-medium text-foreground transition hover:bg-surface-muted"
+          >
+            戒指设置
+          </Link>
+          <ConnectionBadge status={connection} />
+        </div>
       </header>
 
       {/* 错误提示：仅在断连且已有过数据时展示（首屏加载不打扰） */}

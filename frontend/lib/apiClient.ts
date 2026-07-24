@@ -10,6 +10,11 @@ const API_BASE_URL =
 
 const API_PREFIX = "/api/v1";
 
+/** 供 SSE / EventSource 拼接完整地址用（EventSource 不走 fetch 封装） */
+export function apiUrl(path: string): string {
+  return `${API_BASE_URL}${API_PREFIX}${path}`;
+}
+
 interface RequestOptions {
   timeoutMs?: number;
   signal?: AbortSignal;
@@ -17,7 +22,7 @@ interface RequestOptions {
 }
 
 function buildUrl(path: string, query?: RequestOptions["query"]): string {
-  const url = new URL(`${API_BASE_URL}${API_PREFIX}${path}`);
+  const url = new URL(apiUrl(path));
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value !== undefined) url.searchParams.set(key, String(value));
@@ -26,13 +31,12 @@ function buildUrl(path: string, query?: RequestOptions["query"]): string {
   return url.toString();
 }
 
-/**
- * 发起 GET 请求并解包统一响应结构。
- * 失败一律抛出 ApiClientError，UI 层据此展示提示、保留旧数据。
- */
-export async function apiGet<T>(
+/** 通用请求核心：处理超时、外部取消、响应解包与错误规范化。 */
+async function request<T>(
+  method: string,
   path: string,
-  options: RequestOptions = {},
+  body: unknown | undefined,
+  options: RequestOptions,
 ): Promise<T> {
   const { timeoutMs = REQUEST_TIMEOUT_MS, signal, query } = options;
 
@@ -46,11 +50,19 @@ export async function apiGet<T>(
     else signal.addEventListener("abort", onExternalAbort);
   }
 
+  const headers: Record<string, string> = { Accept: "application/json" };
+  let payload: string | undefined;
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    payload = JSON.stringify(body);
+  }
+
   let res: Response;
   try {
     res = await fetch(buildUrl(path, query), {
-      method: "GET",
-      headers: { Accept: "application/json" },
+      method,
+      headers,
+      body: payload,
       signal: controller.signal,
     });
   } catch (err) {
@@ -63,24 +75,49 @@ export async function apiGet<T>(
     if (signal) signal.removeEventListener("abort", onExternalAbort);
   }
 
-  let body: ApiResponse<T>;
+  let respBody: ApiResponse<T>;
   try {
-    body = (await res.json()) as ApiResponse<T>;
+    respBody = (await res.json()) as ApiResponse<T>;
   } catch {
     throw new ApiClientError("BAD_RESPONSE", "响应数据格式异常");
   }
 
-  if (!res.ok || !body.success) {
+  if (!res.ok || !respBody.success) {
     throw new ApiClientError(
-      body.error?.code ?? `HTTP_${res.status}`,
-      body.error?.message ?? `请求失败 (HTTP ${res.status})`,
-      body.error?.details,
+      respBody.error?.code ?? `HTTP_${res.status}`,
+      respBody.error?.message ?? `请求失败 (HTTP ${res.status})`,
+      respBody.error?.details,
     );
   }
 
-  if (body.data === undefined) {
+  if (respBody.data === undefined) {
     throw new ApiClientError("BAD_RESPONSE", "响应缺少 data 字段");
   }
 
-  return body.data;
+  return respBody.data;
+}
+
+/** GET 请求并解包统一响应结构。失败一律抛 ApiClientError。 */
+export async function apiGet<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  return request<T>("GET", path, undefined, options);
+}
+
+/** POST 请求（可带 JSON body）。 */
+export async function apiPost<T>(
+  path: string,
+  body?: unknown,
+  options: RequestOptions = {},
+): Promise<T> {
+  return request<T>("POST", path, body, options);
+}
+
+/** DELETE 请求。 */
+export async function apiDelete<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  return request<T>("DELETE", path, undefined, options);
 }

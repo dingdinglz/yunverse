@@ -20,3 +20,6 @@ minimumReleaseAgeExclude:
   - expo-splash-screen@57.0.5
   - expo-web-browser@57.0.2
   - expo@57.0.8
+  - expo-dev-client@57.0.9
+  - expo-dev-launcher@57.0.9
+  - expo-dev-menu@57.0.9

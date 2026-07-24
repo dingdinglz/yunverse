@@ -26,7 +26,8 @@ from .envelope import ApiError, error_body, new_request_id
 from .gesture import GestureStore, TechniqueRegistry
 from .orchestrator import Orchestrator
 from .playback import AfplayPlayer, PlaybackExecutor, Player
-from .ring_worker import RingWorker
+from .ring_api import router as ring_router
+from .ring_manager import RingManager
 from .state_store import StateStore
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -59,21 +60,18 @@ def create_app(
     orchestrator = Orchestrator(gesture_store, audio, playback, state_store)
 
     ring_enabled = cfg.ring.enabled if start_ring is None else start_ring
+    ring_manager = RingManager(gesture_store)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await playback.start()
-        worker: RingWorker | None = None
-        if ring_enabled:
-            worker = RingWorker(gesture_store, cfg.ring.address)
-            worker.start()
-        app.state.ring_worker = worker
+        if ring_enabled and cfg.ring.address:
+            ring_manager.auto_connect(cfg.ring.address)
         logger.info("%s v%s 已就绪", SERVICE_NAME, SERVICE_VERSION)
         try:
             yield
         finally:
-            if worker is not None:
-                worker.stop()
+            ring_manager.shutdown()
             await playback.stop()
 
     app = FastAPI(title=SERVICE_NAME, version=SERVICE_VERSION, lifespan=lifespan)
@@ -86,6 +84,7 @@ def create_app(
     app.state.playback = playback
     app.state.state_store = state_store
     app.state.orchestrator = orchestrator
+    app.state.ring_manager = ring_manager
 
     # -- CORS (api.md §13：不使用通配，明确来源) ------------------------
     app.add_middleware(
@@ -146,6 +145,7 @@ def create_app(
         )
 
     app.include_router(router)
+    app.include_router(ring_router)
     return app
 
 

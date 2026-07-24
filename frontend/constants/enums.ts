@@ -56,3 +56,20 @@ export const REQUEST_TIMEOUT_MS = 4000;
 export const DEFAULT_TECHNIQUE_LIST: CodeName[] = Object.entries(
   DEFAULT_TECHNIQUES,
 ).map(([code, name]) => ({ code, name }));
+
+// --- 戒指设置页 ----------------------------------------------------------
+/** 戒指状态轮询间隔（作为 SSE 的兜底，SSE 已推 status） */
+export const RING_STATUS_POLL_MS = 3000;
+/** 扫描超时（秒） */
+export const RING_SCAN_TIMEOUT_S = 5;
+/** SSE 事件流路径（相对 /api/v1） */
+export const RING_EVENTS_PATH = "/ring/events";
+/** 录制默认重复次数 */
+export const RING_DEFAULT_REPS = 5;
+/** 测试事件日志最大保留条数 */
+export const RING_EVENT_LOG_MAX = 60;
+/** IMU 实时曲线保留的采样点数 */
+export const RING_IMU_WINDOW = 200;
+/** 扫描/连接这类长操作的请求超时（ms），需大于扫描时长 */
+export const RING_LONG_TIMEOUT_MS = 30000;
+

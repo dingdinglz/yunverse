@@ -29,6 +29,12 @@ ERROR_HTTP_STATUS: dict[str, int] = {
     "INTERNAL_ERROR": 500,
     "SERVICE_UNAVAILABLE": 503,
     "UNAUTHORIZED": 401,
+    # 戒指相关（设置页：连接/录制/测试）
+    "RING_UNAVAILABLE": 503,
+    "RING_NOT_CONNECTED": 409,
+    "RING_BUSY": 409,
+    "GESTURE_NOT_FOUND": 404,
+    "RECORDING_INVALID": 400,
 }
 
 
