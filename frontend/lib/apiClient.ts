@@ -121,3 +121,12 @@ export async function apiDelete<T>(
 ): Promise<T> {
   return request<T>("DELETE", path, undefined, options);
 }
+
+/** PUT 请求（可带 JSON body）。 */
+export async function apiPut<T>(
+  path: string,
+  body?: unknown,
+  options: RequestOptions = {},
+): Promise<T> {
+  return request<T>("PUT", path, body, options);
+}

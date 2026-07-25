@@ -14,11 +14,13 @@ import {
   connectRing,
   deleteGesture,
   disconnectRing,
+  getGestureMapping,
   getRingStatus,
   listGestures,
   repStart,
   repStop,
   setRecognition,
+  setSingleMapping,
   startRecording,
 } from "@/lib/ringService";
 import {
@@ -57,6 +59,8 @@ export interface RingSettings {
   audioFiles: AudioFileInfo[];
   lastError: string | null;
   busy: boolean;
+  mapping: Record<string, string>;
+  techniques: { code: string; name: string }[];
   // 动作
   connect: (address: string) => Promise<void>;
   disconnect: () => Promise<void>;
@@ -67,6 +71,7 @@ export interface RingSettings {
   recStop: () => Promise<void>;
   recCancel: () => Promise<void>;
   toggleRecognition: (enabled: boolean) => Promise<void>;
+  updateMapping: (gestureName: string, technique: string | null) => Promise<void>;
 }
 
 export function useRingSettings(): RingSettings {
@@ -82,6 +87,8 @@ export function useRingSettings(): RingSettings {
   const [audioFiles, setAudioFiles] = useState<AudioFileInfo[]>([]);
   const [lastError, setLastError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [techniques, setTechniques] = useState<{ code: string; name: string }[]>([]);
 
   const controllersRef = useRef<Set<AbortController>>(new Set());
   const logSeq = useRef(0);
@@ -201,6 +208,30 @@ export function useRingSettings(): RingSettings {
     [runAction],
   );
 
+  const refreshMapping = useCallback(async () => {
+    const c = newController();
+    try {
+      const data = await getGestureMapping(c.signal);
+      setMapping(data.mapping);
+      setTechniques(data.techniques);
+    } catch (err) {
+      if (!c.signal.aborted && err instanceof ApiClientError) {
+        setLastError(err.message);
+      }
+    } finally {
+      releaseController(c);
+    }
+  }, [newController, releaseController]);
+
+  const updateMapping = useCallback(
+    (gestureName: string, technique: string | null) =>
+      runAction(async (signal) => {
+        const data = await setSingleMapping(gestureName, technique, signal);
+        setMapping(data.mapping);
+      }).catch(() => {}),
+    [runAction],
+  );
+
   // --- 处理单条 SSE 事件 ----------------------------------------------
   const handleEvent = useCallback(
     (ev: RingEvent) => {
@@ -270,7 +301,7 @@ export function useRingSettings(): RingSettings {
       };
     };
 
-    // 初始状态 + 手势列表
+    // 初始状态 + 手势列表 + 映射
     (async () => {
       const c = new AbortController();
       controllers.add(c);
@@ -282,6 +313,7 @@ export function useRingSettings(): RingSettings {
         controllers.delete(c);
       }
       await refreshGestures();
+      await refreshMapping();
     })();
 
     openStream();
@@ -307,7 +339,7 @@ export function useRingSettings(): RingSettings {
       controllers.forEach((c) => c.abort());
       controllers.clear();
     };
-  }, [handleEvent, refreshGestures]);
+  }, [handleEvent, refreshGestures, refreshMapping]);
 
   return {
     status,
@@ -320,6 +352,8 @@ export function useRingSettings(): RingSettings {
     audioFiles,
     lastError,
     busy,
+    mapping,
+    techniques,
     connect,
     disconnect,
     refreshGestures,
@@ -329,5 +363,6 @@ export function useRingSettings(): RingSettings {
     recStop,
     recCancel,
     toggleRecognition,
+    updateMapping,
   };
 }

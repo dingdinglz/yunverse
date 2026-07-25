@@ -108,6 +108,22 @@ class GestureStore:
         with self._lock:
             self._state.connected = False
 
+    # -- 映射管理 -----------------------------------------------------------
+    def get_mapping(self) -> dict[str, str]:
+        with self._lock:
+            return dict(self._mapping)
+
+    def set_mapping(self, mapping: dict[str, str]) -> None:
+        with self._lock:
+            self._mapping = dict(mapping)
+
+    def update_mapping(self, gesture_code: str, technique_code: str | None) -> None:
+        with self._lock:
+            if technique_code is None:
+                self._mapping.pop(gesture_code, None)
+            else:
+                self._mapping[gesture_code] = technique_code
+
     # -- 读取 -------------------------------------------------------------
     def snapshot(self) -> GestureState:
         with self._lock:

@@ -56,10 +56,12 @@ class RingManager:
         gesture_store: GestureStore,
         vendor_dir: Path = VENDOR_DIR,
         gesture_config: Any = None,
+        state_store: Any = None,
     ):
         self._gesture = gesture_store
         self._vendor_dir = Path(vendor_dir)
         self._gesture_config = gesture_config
+        self._state_store = state_store
 
         self._lock = threading.Lock()
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -513,6 +515,9 @@ class RingManager:
                     connected=True,
                 )
                 self._publish("recognition", {"name": name, "confidence": float(confidence)})
+                if self._state_store is not None:
+                    technique, _ = self._gesture.resolve_technique()
+                    self._state_store._publish({"type": "technique", "data": technique})
 
     async def _listen_events(self) -> None:
         sdk = self._sdk

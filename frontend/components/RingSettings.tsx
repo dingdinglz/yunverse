@@ -5,6 +5,7 @@ import Link from "next/link";
 import ErrorBanner from "@/components/ErrorBanner";
 import RingConnectPanel from "@/components/ring/RingConnectPanel";
 import RingGesturePanel from "@/components/ring/RingGesturePanel";
+import RingMappingPanel from "@/components/ring/RingMappingPanel";
 import RingTestPanel from "@/components/ring/RingTestPanel";
 import { useRingSettings } from "@/lib/useRingSettings";
 
@@ -78,6 +79,14 @@ export default function RingSettings() {
           onToggleRecognition={s.toggleRecognition}
         />
       </div>
+
+      <RingMappingPanel
+        gestures={s.gestures}
+        mapping={s.mapping}
+        techniques={s.techniques}
+        busy={s.busy}
+        onUpdate={s.updateMapping}
+      />
     </main>
   );
 }

@@ -1,7 +1,7 @@
 // 戒指设置页的后端 API 封装（对应 app/ring_api.py）。
 // 扫描/连接是耗时操作，用更长的超时。
 
-import { apiDelete, apiGet, apiPost } from "@/lib/apiClient";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/apiClient";
 import { RING_LONG_TIMEOUT_MS, RING_SCAN_TIMEOUT_S } from "@/constants/enums";
 import type {
   GestureTemplateInfo,
@@ -101,6 +101,43 @@ export function setRecognition(
   return apiPost<{ recognitionEnabled: boolean }>(
     "/ring/recognition",
     { enabled },
+    { signal },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 手势→技法映射
+// ---------------------------------------------------------------------------
+export interface GestureMappingData {
+  mapping: Record<string, string>;
+  techniques: { code: string; name: string }[];
+}
+
+export function getGestureMapping(
+  signal?: AbortSignal,
+): Promise<GestureMappingData> {
+  return apiGet<GestureMappingData>("/ring/mapping", { signal });
+}
+
+export function setGestureMapping(
+  mapping: Record<string, string>,
+  signal?: AbortSignal,
+): Promise<{ mapping: Record<string, string> }> {
+  return apiPut<{ mapping: Record<string, string> }>(
+    "/ring/mapping",
+    { mapping },
+    { signal },
+  );
+}
+
+export function setSingleMapping(
+  gestureName: string,
+  technique: string | null,
+  signal?: AbortSignal,
+): Promise<{ mapping: Record<string, string> }> {
+  return apiPut<{ mapping: Record<string, string> }>(
+    `/ring/mapping/${encodeURIComponent(gestureName)}`,
+    { technique },
     { signal },
   );
 }

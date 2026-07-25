@@ -72,6 +72,11 @@ _NOTE_BY_CODE: dict[str, dict] = {
 DEFAULT_TECHNIQUE = "normal"
 _BASE_TECHNIQUES: dict[str, str] = {
     "normal": "普通演奏",
+    "saoxian": "扫弦",
+    "rou": "揉弦",
+    "shuang": "双弹",
+    "fen": "分",
+    "lunzhi": "轮指",
 }
 
 

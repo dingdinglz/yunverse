@@ -15,7 +15,9 @@
     "method": "dtw",
     "expireMs": 1000,
     "fallbackTechnique": "normal",
-    "mapping": {},
+    "mapping": {
+      "甩-hmm": "saoxian"
+    },
     "techniques": {},
     "minConfidence": 0.0,
     "filter": {
@@ -41,7 +43,9 @@
     "maxSize": 100
   },
   "cors": {
-    "allowOrigins": ["http://localhost:3000"]
+    "allowOrigins": [
+      "http://localhost:3000"
+    ]
   },
   "ring": {
     "enabled": false,

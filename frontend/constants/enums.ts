@@ -30,11 +30,11 @@ export const DEFAULT_NOTES: Record<string, string> = {
 /** 默认技法（code -> 中文名，api.md §2.8） */
 export const DEFAULT_TECHNIQUES: Record<string, string> = {
   normal: "普通演奏",
-  // 预留扩展，以配置接口返回为准
-  pluck: "拨弦",
-  strum: "扫弦",
-  slide: "滑音",
-  vibrato: "揉弦",
+  saoxian: "扫弦",
+  rou: "揉弦",
+  shuang: "双弹",
+  fen: "分",
+  lunzhi: "轮指",
 };
 
 /** 技法未知/为空时的兜底展示（web-frontend.md §6.2） */

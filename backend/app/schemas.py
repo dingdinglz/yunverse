@@ -45,3 +45,11 @@ class RecognitionRequest(BaseModel):
 class SelectionRequest(BaseModel):
     instrument: str | None = None
     key: str | None = None
+
+
+class MappingBody(BaseModel):
+    mapping: dict[str, str]
+
+
+class SingleMappingBody(BaseModel):
+    technique: str | None = None

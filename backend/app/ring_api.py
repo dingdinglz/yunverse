@@ -7,17 +7,22 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import logging
 
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
+from .config import DEFAULT_CONFIG_PATH
 from .envelope import success_body
 from .ring_manager import sse_format
 from .schemas import (
     ConnectRequest,
+    MappingBody,
     RecognitionRequest,
     RecordStartRequest,
     ScanRequest,
+    SingleMappingBody,
 )
 
 router = APIRouter(prefix="/api/v1/ring")
@@ -144,3 +149,55 @@ async def ring_events(request: Request):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# ---------------------------------------------------------------------------
+# 手势→技法映射
+# ---------------------------------------------------------------------------
+logger = logging.getLogger(__name__)
+
+
+def _persist_mapping(mapping: dict[str, str]) -> None:
+    try:
+        raw = json.loads(DEFAULT_CONFIG_PATH.read_text(encoding="utf-8"))
+        raw.setdefault("gesture", {})["mapping"] = mapping
+        DEFAULT_CONFIG_PATH.write_text(
+            json.dumps(raw, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+    except Exception as exc:
+        logger.warning("持久化映射失败: %s", exc)
+
+
+@router.get("/mapping")
+async def get_gesture_mapping(request: Request):
+    gesture_store = request.app.state.gesture_store
+    registry = request.app.state.registry
+    return success_body({
+        "mapping": gesture_store.get_mapping(),
+        "techniques": registry.list(),
+    })
+
+
+@router.put("/mapping")
+async def set_gesture_mapping(request: Request, body: MappingBody):
+    gesture_store = request.app.state.gesture_store
+    registry = request.app.state.registry
+    for tech in body.mapping.values():
+        if not registry.has(tech):
+            return success_body(
+                {"error": f"未知技法: {tech}"},
+            )
+    gesture_store.set_mapping(body.mapping)
+    _persist_mapping(body.mapping)
+    return success_body({"mapping": gesture_store.get_mapping()})
+
+
+@router.put("/mapping/{gesture_name}")
+async def set_single_mapping(request: Request, gesture_name: str, body: SingleMappingBody):
+    gesture_store = request.app.state.gesture_store
+    registry = request.app.state.registry
+    if body.technique is not None and not registry.has(body.technique):
+        return success_body({"error": f"未知技法: {body.technique}"})
+    gesture_store.update_mapping(gesture_name, body.technique)
+    _persist_mapping(gesture_store.get_mapping())
+    return success_body({"mapping": gesture_store.get_mapping()})

@@ -94,6 +94,9 @@ export function useDashboardData(): DashboardData {
           setLastError(null);
         } else if (msg.type === "selection") {
           setSelection(msg.data as Selection);
+        } else if (msg.type === "technique") {
+          const tech = msg.data as { code: string; name: string };
+          setState((prev) => prev ? { ...prev, technique: tech } : prev);
         } else if (msg.type === "play") {
           const item = msg.data as HistoryItem;
           setState((prev) => {
