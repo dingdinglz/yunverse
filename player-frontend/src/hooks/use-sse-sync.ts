@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { API_PREFIX } from '@/config/app-config';
+import type { ScoreActiveState } from '@/types/domain';
 
 interface SelectionEvent {
   instrument?: string;
@@ -15,9 +16,12 @@ export function useSseSync(
   baseUrl: string,
   connected: boolean,
   onSelectionChange: (sel: SelectionEvent) => void,
+  onScoreChange?: (state: ScoreActiveState) => void,
 ) {
-  const callbackRef = useRef(onSelectionChange);
-  callbackRef.current = onSelectionChange;
+  const selRef = useRef(onSelectionChange);
+  selRef.current = onSelectionChange;
+  const scoreRef = useRef(onScoreChange);
+  scoreRef.current = onScoreChange;
 
   useEffect(() => {
     if (!baseUrl || !connected) return;
@@ -34,7 +38,9 @@ export function useSseSync(
         try {
           const msg = JSON.parse(line.slice(6));
           if (msg.type === 'selection' && msg.data) {
-            callbackRef.current(msg.data);
+            selRef.current(msg.data);
+          } else if (msg.type === 'score' && msg.data) {
+            scoreRef.current?.(msg.data as ScoreActiveState);
           }
         } catch {
           // ignore parse errors

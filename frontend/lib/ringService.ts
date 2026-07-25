@@ -5,6 +5,7 @@ import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/apiClient";
 import { RING_LONG_TIMEOUT_MS, RING_SCAN_TIMEOUT_S } from "@/constants/enums";
 import type {
   GestureTemplateInfo,
+  GestureTrigger,
   RecordingState,
   RingDevice,
   RingStatus,
@@ -110,6 +111,8 @@ export function setRecognition(
 // ---------------------------------------------------------------------------
 export interface GestureMappingData {
   mapping: Record<string, string>;
+  instrumentMapping: Record<string, Record<string, string>>;
+  triggers: GestureTrigger[];
   techniques: { code: string; name: string }[];
 }
 
@@ -138,6 +141,36 @@ export function setSingleMapping(
   return apiPut<{ mapping: Record<string, string> }>(
     `/ring/mapping/${encodeURIComponent(gestureName)}`,
     { technique },
+    { signal },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 乐器专属映射
+// ---------------------------------------------------------------------------
+export function setInstrumentSingleMapping(
+  instrument: string,
+  gestureName: string,
+  technique: string | null,
+  signal?: AbortSignal,
+): Promise<{ instrumentMapping: Record<string, Record<string, string>> }> {
+  return apiPut<{ instrumentMapping: Record<string, Record<string, string>> }>(
+    `/ring/mapping/instrument/${encodeURIComponent(instrument)}/${encodeURIComponent(gestureName)}`,
+    { technique },
+    { signal },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 手势触发发音
+// ---------------------------------------------------------------------------
+export function setGestureTriggers(
+  triggers: GestureTrigger[],
+  signal?: AbortSignal,
+): Promise<{ triggers: GestureTrigger[] }> {
+  return apiPut<{ triggers: GestureTrigger[] }>(
+    "/ring/triggers",
+    { triggers },
     { signal },
   );
 }

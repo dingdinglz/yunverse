@@ -64,7 +64,7 @@ class Orchestrator:
         _validate(instrument, key, note)
 
         # 2. 解析技法（读取戒指手势；无效则回退 normal + warning）
-        technique_obj, warnings = self._gesture.resolve_technique()
+        technique_obj, warnings = self._gesture.resolve_technique(instrument=instrument)
 
         # 3. 定位音频（缺失抛 AUDIO_NOT_FOUND，含默认技法兜底）
         audio = self._audio.resolve(instrument, key, note, technique_obj["code"])

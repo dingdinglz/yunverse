@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/apiClient";
-import { getConfig, getHistory, getState } from "@/lib/services";
+import { getConfig, getHistory, getState, getActiveScoreState } from "@/lib/services";
 import { getRingStatus } from "@/lib/ringService";
 import { mergeHistory } from "@/lib/format";
 import { HISTORY_LIMIT } from "@/constants/enums";
@@ -12,6 +12,7 @@ import type {
   ConnectionStatus,
   CurrentState,
   HistoryItem,
+  ScoreState,
 } from "@/types/domain";
 import type { RingConnection } from "@/types/ring";
 
@@ -31,6 +32,7 @@ export interface DashboardData {
   lastError: string | null;
   initialLoading: boolean;
   selection: Selection;
+  scoreState: ScoreState | null;
 }
 
 export function useDashboardData(): DashboardData {
@@ -42,6 +44,7 @@ export function useDashboardData(): DashboardData {
   const [lastError, setLastError] = useState<string | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [selection, setSelection] = useState<Selection>({ instrument: null, key: null });
+  const [scoreState, setScoreState] = useState<ScoreState | null>(null);
 
   const esRef = useRef<EventSource | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -117,6 +120,8 @@ export function useDashboardData(): DashboardData {
           setHistory((prev) => mergeHistory(prev, [item], HISTORY_LIMIT));
           setConnection("connected");
           setLastError(null);
+        } else if (msg.type === "score") {
+          setScoreState(msg.data as ScoreState);
         }
       } catch {
         // malformed SSE frame, ignore
@@ -144,6 +149,11 @@ export function useDashboardData(): DashboardData {
 
     (async () => {
       await Promise.allSettled([refreshConfig(), refreshHistory(), refreshRingStatus()]);
+      // 初始曲谱状态
+      try {
+        const s = await getActiveScoreState();
+        setScoreState(s);
+      } catch { /* ignore */ }
       setInitialLoading(false);
     })();
 
@@ -164,5 +174,5 @@ export function useDashboardData(): DashboardData {
     };
   }, [connectSSE, refreshConfig, refreshHistory, refreshRingStatus]);
 
-  return { state, history, config, connection, ringConnection, lastError, initialLoading, selection };
+  return { state, history, config, connection, ringConnection, lastError, initialLoading, selection, scoreState };
 }

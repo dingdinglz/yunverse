@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,7 +19,7 @@ import { usePlay } from '@/hooks/use-play';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useSseSync } from '@/hooks/use-sse-sync';
 import { useTheme } from '@/hooks/use-theme';
-import type { InstrumentCode, KeySignature, NoteCode } from '@/types/domain';
+import type { InstrumentCode, KeySignature, NoteCode, ScoreActiveState } from '@/types/domain';
 
 /**
  * 演奏主界面（单页），组合连接状态、当前选择、音符按钮和演奏反馈。
@@ -33,7 +33,11 @@ export default function PlayScreen() {
 
   const baseUrl = preferences.backendBaseUrl;
   const { status, retry } = useConnection(baseUrl);
-  useSseSync(baseUrl, status === 'connected', applyRemoteSelection);
+
+  const [scoreState, setScoreState] = useState<ScoreActiveState | null>(null);
+  const handleScoreChange = useCallback((s: ScoreActiveState) => setScoreState(s), []);
+  useSseSync(baseUrl, status === 'connected', applyRemoteSelection, handleScoreChange);
+
   const { instruments, keys, notes, refresh } = useConfig(baseUrl, preferences.selectedInstrument);
   const { phase, pendingNote, recent, errorMessage, triggerPlay, stopPlay } = usePlay(baseUrl);
 
@@ -48,6 +52,12 @@ export default function PlayScreen() {
       preferences.selectedInstrument,
     [instruments, preferences.selectedInstrument],
   );
+
+  const highlightNote = useMemo<NoteCode | null>(() => {
+    if (!scoreState?.active || !scoreState.notes) return null;
+    const active = scoreState.notes.find((n) => n.active);
+    return (active?.code as NoteCode) ?? null;
+  }, [scoreState]);
 
   const instrumentOptions = useMemo(
     () => instruments.map((i) => ({ value: i.code, label: i.name })),
@@ -127,6 +137,7 @@ export default function PlayScreen() {
             <NoteButtonGrid
               notes={notes}
               pendingNote={pendingNote}
+              highlightNote={highlightNote}
               onPressNote={handlePlay}
               sustainEnabled={preferences.selectedInstrument === 'suona' || preferences.selectedInstrument === 'dizi'}
               onLongPressNote={handleLongPressPlay}
@@ -170,6 +181,7 @@ export default function PlayScreen() {
         visible={scoreModal}
         baseUrl={baseUrl}
         onClose={() => setScoreModal(false)}
+        onScoreStarted={setScoreState}
       />
     </ThemedView>
   );

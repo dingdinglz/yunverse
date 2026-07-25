@@ -19,6 +19,8 @@ import {
   listGestures,
   repStart,
   repStop,
+  setGestureTriggers,
+  setInstrumentSingleMapping,
   setRecognition,
   setSingleMapping,
   startRecording,
@@ -39,6 +41,7 @@ import type {
   AudioFileInfo,
   EventLogItem,
   GestureTemplateInfo,
+  GestureTrigger,
   RingEvent,
   RingStatus,
 } from "@/types/ring";
@@ -61,6 +64,8 @@ export interface RingSettings {
   lastError: string | null;
   busy: boolean;
   mapping: Record<string, string>;
+  instrumentMapping: Record<string, Record<string, string>>;
+  triggers: GestureTrigger[];
   techniques: { code: string; name: string }[];
   // 动作
   connect: (address: string) => Promise<void>;
@@ -73,6 +78,8 @@ export interface RingSettings {
   recCancel: () => Promise<void>;
   toggleRecognition: (enabled: boolean) => Promise<void>;
   updateMapping: (gestureName: string, technique: string | null) => Promise<void>;
+  updateInstrumentMapping: (instrument: string, gestureName: string, technique: string | null) => Promise<void>;
+  updateTriggers: (triggers: GestureTrigger[]) => Promise<void>;
 }
 
 export function useRingSettings(): RingSettings {
@@ -89,6 +96,8 @@ export function useRingSettings(): RingSettings {
   const [lastError, setLastError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [instrumentMapping, setInstrumentMapping] = useState<Record<string, Record<string, string>>>({});
+  const [triggers, setTriggers] = useState<GestureTrigger[]>([]);
   const [techniques, setTechniques] = useState<{ code: string; name: string }[]>([]);
   const [voiceState, setVoiceState] = useState<RingSettings["voiceState"]>(null);
 
@@ -215,6 +224,8 @@ export function useRingSettings(): RingSettings {
     try {
       const data = await getGestureMapping(c.signal);
       setMapping(data.mapping);
+      setInstrumentMapping(data.instrumentMapping ?? {});
+      setTriggers(data.triggers ?? []);
       setTechniques(data.techniques);
     } catch (err) {
       if (!c.signal.aborted && err instanceof ApiClientError) {
@@ -230,6 +241,24 @@ export function useRingSettings(): RingSettings {
       runAction(async (signal) => {
         const data = await setSingleMapping(gestureName, technique, signal);
         setMapping(data.mapping);
+      }).catch(() => {}),
+    [runAction],
+  );
+
+  const updateInstrumentMapping = useCallback(
+    (instrument: string, gestureName: string, technique: string | null) =>
+      runAction(async (signal) => {
+        const data = await setInstrumentSingleMapping(instrument, gestureName, technique, signal);
+        setInstrumentMapping(data.instrumentMapping);
+      }).catch(() => {}),
+    [runAction],
+  );
+
+  const updateTriggers = useCallback(
+    (newTriggers: GestureTrigger[]) =>
+      runAction(async (signal) => {
+        const data = await setGestureTriggers(newTriggers, signal);
+        setTriggers(data.triggers);
       }).catch(() => {}),
     [runAction],
   );
@@ -370,6 +399,8 @@ export function useRingSettings(): RingSettings {
     lastError,
     busy,
     mapping,
+    instrumentMapping,
+    triggers,
     techniques,
     connect,
     disconnect,
@@ -381,5 +412,7 @@ export function useRingSettings(): RingSettings {
     recCancel,
     toggleRecognition,
     updateMapping,
+    updateInstrumentMapping,
+    updateTriggers,
   };
 }

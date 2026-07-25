@@ -63,7 +63,10 @@ class GestureConfig:
     method: str = "dtw"  # "dtw" | "hmm"
     expireMs: int = 1000
     fallbackTechnique: str = "normal"
+    oneShot: bool = True
     mapping: dict[str, str] = field(default_factory=dict)
+    instrumentMapping: dict[str, dict[str, str]] = field(default_factory=dict)
+    gestureTriggers: list[dict] = field(default_factory=list)
     techniques: dict[str, str] = field(default_factory=dict)
     minConfidence: float = 0.0
     filter: GestureFilterConfig = field(default_factory=GestureFilterConfig)

@@ -144,3 +144,11 @@ export interface EventLogItem {
   text: string;
   tone: "info" | "ok" | "warn" | "danger";
 }
+
+/** 手势触发发音配置项 */
+export interface GestureTrigger {
+  gesture: string;
+  instrument: string;
+  key: string;
+  note: string;
+}

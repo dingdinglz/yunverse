@@ -12,12 +12,20 @@
     "maxQueue": 32
   },
   "gesture": {
-    "method": "dtw",
+    "method": "hmm",
     "expireMs": 1000,
     "fallbackTechnique": "normal",
+    "oneShot": true,
     "mapping": {
-      "甩-hmm": "saoxian"
+      "甩-hmm": "saoxian",
+      "捏": "saoxian",
+      "响指": "rou",
+      "甩": "shuang",
+      "雨刮器": "fen",
+      "晃": "lunzhi"
     },
+    "instrumentMapping": {},
+    "gestureTriggers": [],
     "techniques": {},
     "minConfidence": 0.0,
     "filter": {

@@ -58,12 +58,14 @@ class RingManager:
         gesture_config: Any = None,
         state_store: Any = None,
         voice_agent: Any = None,
+        orchestrator: Any = None,
     ):
         self._gesture = gesture_store
         self._vendor_dir = Path(vendor_dir)
         self._gesture_config = gesture_config
         self._state_store = state_store
         self._voice_agent = voice_agent
+        self._orchestrator = orchestrator
 
         self._lock = threading.Lock()
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -517,9 +519,36 @@ class RingManager:
                     connected=True,
                 )
                 self._publish("recognition", {"name": name, "confidence": float(confidence)})
-                if self._state_store is not None:
-                    technique, _ = self._gesture.resolve_technique()
+
+                trigger = self._gesture.find_trigger(name)
+                if trigger and self._orchestrator is not None:
+                    loop = self._loop
+                    if loop:
+                        asyncio.run_coroutine_threadsafe(
+                            self._auto_play(trigger), loop
+                        )
+                elif self._state_store is not None:
+                    current_instrument = None
+                    if self._state_store:
+                        sel = self._state_store.selection()
+                        current_instrument = sel.get("instrument")
+                    technique = self._gesture.resolve_technique_for(name, instrument=current_instrument)
                     self._state_store._publish({"type": "technique", "data": technique})
+
+    async def _auto_play(self, trigger: dict) -> None:
+        try:
+            data = await self._orchestrator.play(
+                trigger["instrument"], trigger["key"], trigger["note"]
+            )
+            self._publish("event", {
+                "kind": "gesture_play",
+                "gesture": trigger["gesture"],
+                "instrument": trigger["instrument"],
+                "note": trigger["note"],
+            })
+        except Exception as exc:
+            logger.warning("手势触发发音失败: %s", exc)
+            self._publish("event", {"kind": "error", "message": f"手势触发发音失败: {exc}"})
 
     async def _listen_events(self) -> None:
         sdk = self._sdk

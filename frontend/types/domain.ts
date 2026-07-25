@@ -74,3 +74,36 @@ export interface HistoryPage {
 
 /** 连接状态（前端派生，非后端字段） */
 export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "reconnecting";
+
+/** 曲谱模式 SSE 推送的单个音符 */
+export interface ScoreNote {
+  code: string;
+  index: number;
+  active: boolean;
+  lyric?: string;
+  duration?: number;
+}
+
+/** 曲谱模式活跃状态（SSE "score" 事件 data） */
+export interface ScoreState {
+  active: boolean;
+  scoreId?: string | null;
+  title?: string;
+  instrument?: string;
+  key?: string;
+  tempo?: number;
+  currentIndex: number;
+  totalNotes: number;
+  notes: ScoreNote[];
+}
+
+/** 完整曲谱详情（GET /api/v1/scores/:id） */
+export interface ScoreDetail {
+  id: string;
+  title: string;
+  key: string;
+  timeSignature?: string;
+  tempo?: number;
+  instrument: string;
+  notes: { code: string; duration: number; lyric?: string }[];
+}

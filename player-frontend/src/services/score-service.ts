@@ -23,6 +23,7 @@ export interface ScoreActiveState {
   tempo?: number;
   currentIndex: number;
   totalNotes: number;
+  notes?: { code: string; index: number; active: boolean; lyric?: string; duration?: number }[];
 }
 
 /** GET /api/v1/scores —— 获取曲谱列表 */

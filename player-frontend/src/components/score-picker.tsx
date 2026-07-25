@@ -9,21 +9,22 @@ import {
   getScores,
   startScore,
   stopScore,
-  type ScoreActiveState,
   type ScoreSummary,
 } from '@/services/score-service';
+import type { ScoreActiveState } from '@/types/domain';
 
 interface ScorePickerProps {
   visible: boolean;
   baseUrl: string;
   onClose: () => void;
+  onScoreStarted?: (state: ScoreActiveState) => void;
 }
 
 /**
  * 曲谱选择弹窗：展示可用曲目列表，点击即激活曲谱模式。
  * 若当前已在曲谱模式，显示停止按钮。
  */
-export function ScorePicker({ visible, baseUrl, onClose }: ScorePickerProps) {
+export function ScorePicker({ visible, baseUrl, onClose, onScoreStarted }: ScorePickerProps) {
   const theme = useTheme();
   const [scores, setScores] = useState<ScoreSummary[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -47,8 +48,11 @@ export function ScorePicker({ visible, baseUrl, onClose }: ScorePickerProps) {
   const handleSelect = async (scoreId: string) => {
     setLoading(true);
     try {
-      const state: ScoreActiveState = await startScore(baseUrl, scoreId);
+      const state = await startScore(baseUrl, scoreId);
       setActiveId(state.scoreId);
+      if (state.notes) {
+        onScoreStarted?.(state as ScoreActiveState);
+      }
       onClose();
     } catch {
       // 错误忽略

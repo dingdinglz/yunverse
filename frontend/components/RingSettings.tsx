@@ -85,9 +85,13 @@ export default function RingSettings() {
       <RingMappingPanel
         gestures={s.gestures}
         mapping={s.mapping}
+        instrumentMapping={s.instrumentMapping}
+        triggers={s.triggers}
         techniques={s.techniques}
         busy={s.busy}
         onUpdate={s.updateMapping}
+        onUpdateInstrument={s.updateInstrumentMapping}
+        onUpdateTriggers={s.updateTriggers}
       />
 
       <RingVoiceDebugPanel />

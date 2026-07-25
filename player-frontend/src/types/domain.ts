@@ -53,3 +53,25 @@ export interface Technique {
   code: string;
   name: string;
 }
+
+/** 曲谱模式 SSE 推送的单个音符 */
+export interface ScoreNote {
+  code: string;
+  index: number;
+  active: boolean;
+  lyric?: string;
+  duration?: number;
+}
+
+/** 曲谱模式活跃状态（SSE "score" 事件 data） */
+export interface ScoreActiveState {
+  active: boolean;
+  scoreId?: string | null;
+  title?: string;
+  instrument?: string;
+  key?: string;
+  tempo?: number;
+  currentIndex: number;
+  totalNotes: number;
+  notes: ScoreNote[];
+}

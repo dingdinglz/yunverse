@@ -47,6 +47,7 @@ PIPA_NOTES: list[dict] = [
     {"code": "mi", "label": "mi", "degree": 3, "register": "normal"},
     {"code": "fa", "label": "fa", "degree": 4, "register": "normal"},
     {"code": "so", "label": "so", "degree": 5, "register": "normal"},
+    {"code": "la", "label": "la", "degree": 6, "register": "normal"},
     {"code": "xi", "label": "xi", "degree": 7, "register": "normal"},
     {"code": "do_high", "label": "do", "degree": 1, "register": "high"},
     {"code": "ri_high", "label": "ri", "degree": 2, "register": "high"},

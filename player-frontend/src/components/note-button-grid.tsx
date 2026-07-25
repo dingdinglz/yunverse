@@ -9,6 +9,7 @@ import type { NoteButton, NoteCode, NoteRegister } from '@/types/domain';
 interface NoteButtonGridProps {
   notes: NoteButton[];
   pendingNote: NoteCode | null;
+  highlightNote?: NoteCode | null;
   onPressNote: (note: NoteCode) => void;
   sustainEnabled?: boolean;
   onLongPressNote?: (note: NoteCode) => void;
@@ -40,16 +41,16 @@ function hasMultipleRegisters(notes: NoteButton[]): boolean {
   return registers.size > 1;
 }
 
-export function NoteButtonGrid({ notes, pendingNote, onPressNote, sustainEnabled, onLongPressNote, onReleaseNote }: NoteButtonGridProps) {
+export function NoteButtonGrid({ notes, pendingNote, highlightNote, onPressNote, sustainEnabled, onLongPressNote, onReleaseNote }: NoteButtonGridProps) {
   if (hasMultipleRegisters(notes)) {
     return (
-      <RegisterGrid notes={notes} pendingNote={pendingNote} onPressNote={onPressNote} sustainEnabled={sustainEnabled} onLongPressNote={onLongPressNote} onReleaseNote={onReleaseNote} />
+      <RegisterGrid notes={notes} pendingNote={pendingNote} highlightNote={highlightNote} onPressNote={onPressNote} sustainEnabled={sustainEnabled} onLongPressNote={onLongPressNote} onReleaseNote={onReleaseNote} />
     );
   }
-  return <ClassicGrid notes={notes} pendingNote={pendingNote} onPressNote={onPressNote} sustainEnabled={sustainEnabled} onLongPressNote={onLongPressNote} onReleaseNote={onReleaseNote} />;
+  return <ClassicGrid notes={notes} pendingNote={pendingNote} highlightNote={highlightNote} onPressNote={onPressNote} sustainEnabled={sustainEnabled} onLongPressNote={onLongPressNote} onReleaseNote={onReleaseNote} />;
 }
 
-function ClassicGrid({ notes, pendingNote, onPressNote, sustainEnabled, onLongPressNote, onReleaseNote }: NoteButtonGridProps) {
+function ClassicGrid({ notes, pendingNote, highlightNote, onPressNote, sustainEnabled, onLongPressNote, onReleaseNote }: NoteButtonGridProps) {
   const rows = chunkIntoRows(notes);
   return (
     <View style={styles.grid}>
@@ -61,6 +62,7 @@ function ClassicGrid({ notes, pendingNote, onPressNote, sustainEnabled, onLongPr
                 key={note.code}
                 note={note}
                 pending={pendingNote === note.code}
+                highlight={highlightNote === note.code}
                 onPress={() => onPressNote(note.code)}
                 sustainEnabled={sustainEnabled}
                 onLongPress={onLongPressNote ? () => onLongPressNote(note.code) : undefined}
@@ -76,7 +78,7 @@ function ClassicGrid({ notes, pendingNote, onPressNote, sustainEnabled, onLongPr
   );
 }
 
-function RegisterGrid({ notes, pendingNote, onPressNote, sustainEnabled, onLongPressNote, onReleaseNote }: NoteButtonGridProps) {
+function RegisterGrid({ notes, pendingNote, highlightNote, onPressNote, sustainEnabled, onLongPressNote, onReleaseNote }: NoteButtonGridProps) {
   const theme = useTheme();
   const allColumns = REGISTERS.map((reg) => notes.filter((n) => n.register === reg));
   const activeRegisters = REGISTERS.filter((_, i) => allColumns[i].length > 0);
@@ -103,6 +105,7 @@ function RegisterGrid({ notes, pendingNote, onPressNote, sustainEnabled, onLongP
                 key={note.code}
                 note={note}
                 pending={pendingNote === note.code}
+                highlight={highlightNote === note.code}
                 onPress={() => onPressNote(note.code)}
                 sustainEnabled={sustainEnabled}
                 onLongPress={onLongPressNote ? () => onLongPressNote(note.code) : undefined}
@@ -121,13 +124,14 @@ function RegisterGrid({ notes, pendingNote, onPressNote, sustainEnabled, onLongP
 interface NoteButtonItemProps {
   note: NoteButton;
   pending: boolean;
+  highlight: boolean;
   onPress: () => void;
   sustainEnabled?: boolean;
   onLongPress?: () => void;
   onRelease?: () => void;
 }
 
-function NoteButtonItem({ note, pending, onPress, sustainEnabled, onLongPress, onRelease }: NoteButtonItemProps) {
+function NoteButtonItem({ note, pending, highlight, onPress, sustainEnabled, onLongPress, onRelease }: NoteButtonItemProps) {
   const theme = useTheme();
   const isLongPressing = useRef(false);
 
@@ -152,8 +156,17 @@ function NoteButtonItem({ note, pending, onPress, sustainEnabled, onLongPress, o
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: pending || pressed ? theme.accent : theme.backgroundElement,
-          borderColor: pending || pressed ? theme.accent : theme.border,
+          backgroundColor: pending || pressed
+            ? theme.accent
+            : highlight
+              ? theme.accentSoft
+              : theme.backgroundElement,
+          borderColor: pending || pressed
+            ? theme.accent
+            : highlight
+              ? theme.accent
+              : theme.border,
+          borderWidth: highlight && !pending ? 2 : 1,
           transform: [{ scale: pressed ? 0.96 : 1 }],
         },
       ]}

@@ -8,6 +8,8 @@ import type {
   CurrentState,
   Health,
   HistoryPage,
+  ScoreDetail,
+  ScoreState,
 } from "@/types/domain";
 
 export function getHealth(signal?: AbortSignal): Promise<Health> {
@@ -27,4 +29,15 @@ export function getHistory(
   signal?: AbortSignal,
 ): Promise<HistoryPage> {
   return apiGet<HistoryPage>("/history", { query: { limit }, signal });
+}
+
+export function getScore(
+  scoreId: string,
+  signal?: AbortSignal,
+): Promise<ScoreDetail> {
+  return apiGet<ScoreDetail>(`/scores/${encodeURIComponent(scoreId)}`, { signal });
+}
+
+export function getActiveScoreState(signal?: AbortSignal): Promise<ScoreState> {
+  return apiGet<ScoreState>("/scores/active", { signal });
 }

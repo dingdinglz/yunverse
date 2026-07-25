@@ -6,11 +6,12 @@ import ConnectionBadge from "@/components/ConnectionBadge";
 import CurrentStateCards from "@/components/CurrentStateCards";
 import ErrorBanner from "@/components/ErrorBanner";
 import HistoryTable from "@/components/HistoryTable";
+import ScoreDisplay from "@/components/ScoreDisplay";
 import SkeletonDashboard from "@/components/SkeletonDashboard";
 import { useDashboardData } from "@/lib/useDashboardData";
 
 export default function Dashboard() {
-  const { state, history, config, connection, ringConnection, lastError, initialLoading, selection } =
+  const { state, history, config, connection, ringConnection, lastError, initialLoading, selection, scoreState } =
     useDashboardData();
 
   return (
@@ -46,6 +47,7 @@ export default function Dashboard() {
         <SkeletonDashboard />
       ) : (
         <>
+          {scoreState?.active && <ScoreDisplay scoreState={scoreState} />}
           <CurrentStateCards state={state} config={config} selection={selection} />
           <HistoryTable items={history} config={config} />
         </>

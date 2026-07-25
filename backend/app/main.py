@@ -52,6 +52,9 @@ def create_app(
         mapping=cfg.gesture.mapping,
         fallback=cfg.gesture.fallbackTechnique,
         min_confidence=cfg.gesture.minConfidence,
+        one_shot=cfg.gesture.oneShot,
+        instrument_mapping=cfg.gesture.instrumentMapping,
+        triggers=cfg.gesture.gestureTriggers,
     )
     audio = AudioResource(cfg.audio_root, root_name=Path(cfg.audio.rootDir).name or "audio")
     playback = PlaybackExecutor(
@@ -71,7 +74,7 @@ def create_app(
     if cfg.voice.enabled and cfg.voice.stepfun_api_key:
         voice_agent = VoiceAgent(cfg.voice)
         logger.info("语音指令已启用 (model=%s)", cfg.voice.llm_model)
-    ring_manager = RingManager(gesture_store, gesture_config=cfg.gesture, state_store=state_store, voice_agent=voice_agent)
+    ring_manager = RingManager(gesture_store, gesture_config=cfg.gesture, state_store=state_store, voice_agent=voice_agent, orchestrator=orchestrator)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):

@@ -18,11 +18,13 @@ from .envelope import success_body
 from .ring_manager import sse_format
 from .schemas import (
     ConnectRequest,
+    InstrumentSingleMappingBody,
     MappingBody,
     RecognitionRequest,
     RecordStartRequest,
     ScanRequest,
     SingleMappingBody,
+    TriggersBody,
 )
 
 router = APIRouter(prefix="/api/v1/ring")
@@ -168,12 +170,36 @@ def _persist_mapping(mapping: dict[str, str]) -> None:
         logger.warning("持久化映射失败: %s", exc)
 
 
+def _persist_instrument_mapping(inst_mapping: dict[str, dict[str, str]]) -> None:
+    try:
+        raw = json.loads(DEFAULT_CONFIG_PATH.read_text(encoding="utf-8"))
+        raw.setdefault("gesture", {})["instrumentMapping"] = inst_mapping
+        DEFAULT_CONFIG_PATH.write_text(
+            json.dumps(raw, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+    except Exception as exc:
+        logger.warning("持久化乐器映射失败: %s", exc)
+
+
+def _persist_triggers(triggers: list[dict]) -> None:
+    try:
+        raw = json.loads(DEFAULT_CONFIG_PATH.read_text(encoding="utf-8"))
+        raw.setdefault("gesture", {})["gestureTriggers"] = triggers
+        DEFAULT_CONFIG_PATH.write_text(
+            json.dumps(raw, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+    except Exception as exc:
+        logger.warning("持久化触发配置失败: %s", exc)
+
+
 @router.get("/mapping")
 async def get_gesture_mapping(request: Request):
     gesture_store = request.app.state.gesture_store
     registry = request.app.state.registry
     return success_body({
         "mapping": gesture_store.get_mapping(),
+        "instrumentMapping": gesture_store.get_instrument_mapping(),
+        "triggers": gesture_store.get_triggers(),
         "techniques": registry.list(),
     })
 
@@ -201,3 +227,36 @@ async def set_single_mapping(request: Request, gesture_name: str, body: SingleMa
     gesture_store.update_mapping(gesture_name, body.technique)
     _persist_mapping(gesture_store.get_mapping())
     return success_body({"mapping": gesture_store.get_mapping()})
+
+
+# ---------------------------------------------------------------------------
+# 乐器专属映射
+# ---------------------------------------------------------------------------
+@router.put("/mapping/instrument/{instrument}/{gesture_name}")
+async def set_instrument_single_mapping(
+    request: Request, instrument: str, gesture_name: str, body: InstrumentSingleMappingBody
+):
+    gesture_store = request.app.state.gesture_store
+    registry = request.app.state.registry
+    if body.technique is not None and not registry.has(body.technique):
+        return success_body({"error": f"未知技法: {body.technique}"})
+    gesture_store.update_instrument_mapping(instrument, gesture_name, body.technique)
+    _persist_instrument_mapping(gesture_store.get_instrument_mapping())
+    return success_body({"instrumentMapping": gesture_store.get_instrument_mapping()})
+
+
+# ---------------------------------------------------------------------------
+# 手势触发发音
+# ---------------------------------------------------------------------------
+@router.get("/triggers")
+async def get_triggers(request: Request):
+    gesture_store = request.app.state.gesture_store
+    return success_body({"triggers": gesture_store.get_triggers()})
+
+
+@router.put("/triggers")
+async def set_triggers(request: Request, body: TriggersBody):
+    gesture_store = request.app.state.gesture_store
+    gesture_store.set_triggers([t.model_dump() for t in body.triggers])
+    _persist_triggers(gesture_store.get_triggers())
+    return success_body({"triggers": gesture_store.get_triggers()})

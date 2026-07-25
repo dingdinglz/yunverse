@@ -57,3 +57,19 @@ class SingleMappingBody(BaseModel):
 
 class VoiceDebugRequest(BaseModel):
     text: str
+
+
+# --- 手势乐器映射 + 触发发音 -----------------------------------------------
+class InstrumentSingleMappingBody(BaseModel):
+    technique: str | None = None
+
+
+class GestureTriggerItem(BaseModel):
+    gesture: str
+    instrument: str
+    key: str
+    note: str
+
+
+class TriggersBody(BaseModel):
+    triggers: list[GestureTriggerItem]
