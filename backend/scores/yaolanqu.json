@@ -1,0 +1,64 @@
+{
+  "id": "yaolanqu",
+  "title": "摇篮曲",
+  "key": "D",
+  "timeSignature": "4/4",
+  "tempo": 66,
+  "instrument": "pipa",
+  "notes": [
+    {"code": "mi", "duration": 1, "lyric": "睡"},
+    {"code": "so", "duration": 1, "lyric": "吧"},
+    {"code": "ri", "duration": 1.5, "lyric": "睡"},
+    {"code": "mi", "duration": 0.25, "lyric": ""},
+    {"code": "fa", "duration": 0.25, "lyric": "吧"},
+
+    {"code": "mi", "duration": 1, "lyric": "我"},
+    {"code": "mi", "duration": 1, "lyric": "亲"},
+    {"code": "ri", "duration": 0.25, "lyric": "爱"},
+    {"code": "do", "duration": 0.25, "lyric": ""},
+    {"code": "xi", "duration": 0.25, "lyric": "的"},
+    {"code": "do", "duration": 0.25, "lyric": ""},
+    {"code": "ri", "duration": 1, "lyric": "宝"},
+    {"code": "so", "duration": 1, "lyric": "贝"},
+
+    {"code": "mi", "duration": 1, "lyric": "妈"},
+    {"code": "so", "duration": 1, "lyric": "妈"},
+    {"code": "ri", "duration": 1.5, "lyric": "的"},
+    {"code": "mi", "duration": 0.25, "lyric": "双"},
+    {"code": "fa", "duration": 0.25, "lyric": ""},
+
+    {"code": "mi", "duration": 1, "lyric": "手"},
+    {"code": "mi", "duration": 1, "lyric": "轻"},
+    {"code": "ri", "duration": 0.25, "lyric": "轻"},
+    {"code": "mi", "duration": 0.25, "lyric": "摇"},
+    {"code": "fa", "duration": 0.25, "lyric": ""},
+    {"code": "ri", "duration": 0.25, "lyric": "着"},
+    {"code": "do", "duration": 1, "lyric": "你"},
+
+    {"code": "ri", "duration": 1.5, "lyric": "摇"},
+    {"code": "ri", "duration": 0.5, "lyric": "篮"},
+    {"code": "mi", "duration": 1, "lyric": "摇"},
+    {"code": "ri", "duration": 0.5, "lyric": ""},
+    {"code": "do", "duration": 0.5, "lyric": "你"},
+
+    {"code": "so", "duration": 1, "lyric": "快"},
+    {"code": "fa", "duration": 0.5, "lyric": "快"},
+    {"code": "mi", "duration": 0.5, "lyric": "安"},
+    {"code": "ri", "duration": 1, "lyric": ""},
+    {"code": "so", "duration": 1, "lyric": "睡"},
+
+    {"code": "mi", "duration": 1, "lyric": "夜"},
+    {"code": "so", "duration": 1, "lyric": "已"},
+    {"code": "ri", "duration": 1.5, "lyric": "安"},
+    {"code": "mi", "duration": 0.25, "lyric": ""},
+    {"code": "fa", "duration": 0.25, "lyric": "静"},
+
+    {"code": "mi", "duration": 1, "lyric": "被"},
+    {"code": "mi", "duration": 1, "lyric": "里"},
+    {"code": "ri", "duration": 0.25, "lyric": "多"},
+    {"code": "mi", "duration": 0.25, "lyric": "温"},
+    {"code": "fa", "duration": 0.25, "lyric": ""},
+    {"code": "ri", "duration": 0.25, "lyric": ""},
+    {"code": "do", "duration": 2, "lyric": "暖"}
+  ]
+}

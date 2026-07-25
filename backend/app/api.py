@@ -15,7 +15,7 @@ from fastapi.responses import StreamingResponse
 from . import SERVICE_NAME, SERVICE_VERSION
 from .constants import INSTRUMENTS, INSTRUMENT_NOTES, KEYS, NOTES
 from .envelope import ApiError, iso_now, new_request_id, success_body
-from .schemas import PlayRequest, RingGestureRequest, SelectionRequest
+from .schemas import PlayRequest, RingGestureRequest, SelectionRequest, VoiceDebugRequest
 
 SSE_HEARTBEAT_S = 15.0
 
@@ -180,6 +180,9 @@ async def events(request: Request):
             current["ring"] = gesture_store.snapshot().to_public()
             yield _sse_frame({"type": "state", "data": current})
             yield _sse_frame({"type": "selection", "data": state_store.selection()})
+            # 曲谱模式状态
+            score_store = request.app.state.score_store
+            yield _sse_frame({"type": "score", "data": score_store.active_state()})
             while True:
                 if await request.is_disconnected():
                     break
@@ -201,3 +204,32 @@ async def events(request: Request):
 
 def _sse_frame(item: dict) -> str:
     return f"data: {json.dumps(item, ensure_ascii=False)}\n\n"
+
+
+# ---------------------------------------------------------------------------
+# 12. 语音调试（文本模拟语音指令）
+# ---------------------------------------------------------------------------
+@router.post("/voice/debug")
+async def voice_debug(request: Request, body: VoiceDebugRequest):
+    """接受文本输入，走 LLM 意图解析 → 切换乐器，用于调试语音效果。"""
+    voice_agent = getattr(request.app.state, "voice_agent", None)
+    if voice_agent is None:
+        raise ApiError("VOICE_DISABLED", "语音功能未启用", http_status=400)
+
+    state_store = request.app.state.state_store
+    intent = await voice_agent.parse_intent(body.text)
+    if not intent:
+        return success_body({
+            "matched": False,
+            "text": body.text,
+            "reason": "LLM 未识别出乐器切换意图",
+        })
+
+    instrument = intent["instrument"]
+    snapshot = state_store.update_selection(instrument, None)
+    return success_body({
+        "matched": True,
+        "text": body.text,
+        "instrument": instrument,
+        "selection": snapshot,
+    })

@@ -44,7 +44,8 @@
   },
   "cors": {
     "allowOrigins": [
-      "http://localhost:3000"
+      "http://localhost:3000",
+      "http://10.0.2.2:5173"
     ]
   },
   "ring": {
@@ -54,5 +55,12 @@
   "auth": {
     "enabled": false,
     "token": ""
+  },
+  "voice": {
+    "enabled": false,
+    "stepfun_api_key": "",
+    "stepfun_base_url": "https://api.stepfun.com/v1",
+    "asr_model": "stepaudio-2.5-asr",
+    "llm_model": "step-3.7-flash"
   }
 }

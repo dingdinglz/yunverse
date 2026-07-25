@@ -1,0 +1,10 @@
+{
+  "label": "React SDK",
+  "position": 1,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk",
+    "description": "Reference docs for React components, CSS APIs, DOM APIs, events, JS APIs, and scene configuration."
+  }
+}

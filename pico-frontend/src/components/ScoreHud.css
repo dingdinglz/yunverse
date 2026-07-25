@@ -1,0 +1,89 @@
+.score-surface {
+  padding: 5% 4%;
+  gap: 12px;
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.score-title {
+  color: var(--hud-green);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.score-progress {
+  color: var(--hud-green-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* 音符流：水平排列，当前音符居中突出 */
+.score-flow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 8px 0;
+}
+
+.score-note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.score-note-past {
+  opacity: 0.25;
+}
+
+.score-note-active {
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+.score-note-num {
+  color: var(--hud-green);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-note-active .score-note-num {
+  color: #fff;
+  text-shadow: 0 0 12px var(--hud-green);
+}
+
+.score-note-lyric {
+  color: var(--hud-green-muted);
+  font-size: 0.6rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.score-note-active .score-note-lyric {
+  color: var(--hud-green);
+}
+
+/* 底部进度条 */
+.score-bar-wrap {
+  height: 4px;
+  background: rgba(56, 232, 106, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.score-bar {
+  height: 100%;
+  background: var(--hud-green);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}

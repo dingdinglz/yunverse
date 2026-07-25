@@ -15,6 +15,11 @@ INSTRUMENTS: dict[str, str] = {
     "guzheng": "古筝",
     "erhu": "二胡",
     "dizi": "笛子",
+    "piano": "钢琴",
+    "guitar": "吉他",
+    "violin": "小提琴",
+    "flute": "长笛",
+    "bass": "贝斯",
 }
 
 
@@ -91,12 +96,56 @@ DIZI_NOTES: list[dict] = [
     {"code": "la_high", "label": "la", "degree": 6, "register": "high"},
 ]
 
+PIANO_NOTES: list[dict] = [
+    *[{"code": f"{name}_low", "label": name, "degree": i, "register": "low"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": f"{name}_high", "label": name, "degree": i, "register": "high"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+]
+
+GUITAR_NOTES: list[dict] = [
+    *[{"code": f"{name}_low", "label": name, "degree": i, "register": "low"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": f"{name}_high", "label": name, "degree": i, "register": "high"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+]
+
+VIOLIN_NOTES: list[dict] = [
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": f"{name}_high", "label": name, "degree": i, "register": "high"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+]
+
+FLUTE_NOTES: list[dict] = [
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": f"{name}_high", "label": name, "degree": i, "register": "high"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+]
+
+BASS_NOTES: list[dict] = [
+    *[{"code": f"{name}_low", "label": name, "degree": i, "register": "low"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+]
+
 INSTRUMENT_NOTES: dict[str, list[dict]] = {
     "pipa": PIPA_NOTES,
     "suona": SUONA_NOTES,
     "guzheng": GUZHENG_NOTES,
     "erhu": ERHU_NOTES,
     "dizi": DIZI_NOTES,
+    "piano": PIANO_NOTES,
+    "guitar": GUITAR_NOTES,
+    "violin": VIOLIN_NOTES,
+    "flute": FLUTE_NOTES,
+    "bass": BASS_NOTES,
 }
 
 NOTES: list[dict] = PIPA_NOTES

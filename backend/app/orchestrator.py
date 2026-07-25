@@ -19,6 +19,7 @@ from .constants import (
 from .envelope import ApiError, iso_now, new_event_id
 from .gesture import GestureStore
 from .playback import PlaybackExecutor
+from .score_store import ScoreStore
 from .state_store import StateStore
 
 
@@ -50,11 +51,13 @@ class Orchestrator:
         audio: AudioResource,
         playback: PlaybackExecutor,
         state_store: StateStore,
+        score_store: ScoreStore | None = None,
     ):
         self._gesture = gesture_store
         self._audio = audio
         self._playback = playback
         self._state = state_store
+        self._score = score_store
 
     async def play(self, instrument: str, key: str, note: str, loop: bool = False) -> dict:
         # 1. 参数校验
@@ -103,5 +106,9 @@ class Orchestrator:
             "createdAt": created_at,
         }
         self._state.record(history_item)
+
+        # 曲谱模式联动：演奏音符匹配时自动推进
+        if self._score:
+            self._score.try_advance_on_play(note)
 
         return data

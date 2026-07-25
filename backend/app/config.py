@@ -94,6 +94,15 @@ class AuthConfig:
 
 
 @dataclass
+class VoiceConfig:
+    enabled: bool = False
+    stepfun_api_key: str = ""
+    stepfun_base_url: str = "https://api.stepfun.com/v1"
+    asr_model: str = "stepaudio-2.5-asr"
+    llm_model: str = "step-3.7-flash"
+
+
+@dataclass
 class Config:
     server: ServerConfig = field(default_factory=ServerConfig)
     audio: AudioConfig = field(default_factory=AudioConfig)
@@ -103,6 +112,7 @@ class Config:
     cors: CorsConfig = field(default_factory=CorsConfig)
     ring: RingConfig = field(default_factory=RingConfig)
     auth: AuthConfig = field(default_factory=AuthConfig)
+    voice: VoiceConfig = field(default_factory=VoiceConfig)
 
     @property
     def audio_root(self) -> Path:
@@ -149,6 +159,7 @@ def load_config(path: str | Path | None = None) -> Config:
         _merge(cfg.cors, raw.get("cors", {}))
         _merge(cfg.ring, raw.get("ring", {}))
         _merge(cfg.auth, raw.get("auth", {}))
+        _merge(cfg.voice, raw.get("voice", {}))
 
     # 环境变量覆盖（关键项）
     if (port := os.environ.get("APP_PORT")):
@@ -162,5 +173,10 @@ def load_config(path: str | Path | None = None) -> Config:
         cfg.ring.enabled = ring_enabled
     if (addr := os.environ.get("RING_ADDRESS")):
         cfg.ring.address = addr
+    if (api_key := os.environ.get("STEPFUN_API_KEY")):
+        cfg.voice.stepfun_api_key = api_key
+    voice_enabled = _bool_env("VOICE_ENABLED")
+    if voice_enabled is not None:
+        cfg.voice.enabled = voice_enabled
 
     return cfg

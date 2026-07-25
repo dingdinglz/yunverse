@@ -12,6 +12,7 @@ dependencies = [
     "scipy>=1.12",
     "hmmlearn>=0.3",
     "scikit-learn>=1.4",
+    "httpx>=0.27",
 ]
 
 [dependency-groups]

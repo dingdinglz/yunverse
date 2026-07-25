@@ -1,0 +1,10 @@
+{
+  "label": "Manifest Options",
+  "position": 6,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk/manifest-options",
+    "description": "Manifest options for configuring the main scene of a WebSpatial app."
+  }
+}

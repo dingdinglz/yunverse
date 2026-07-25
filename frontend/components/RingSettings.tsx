@@ -7,6 +7,7 @@ import RingConnectPanel from "@/components/ring/RingConnectPanel";
 import RingGesturePanel from "@/components/ring/RingGesturePanel";
 import RingMappingPanel from "@/components/ring/RingMappingPanel";
 import RingTestPanel from "@/components/ring/RingTestPanel";
+import RingVoiceDebugPanel from "@/components/ring/RingVoiceDebugPanel";
 import { useRingSettings } from "@/lib/useRingSettings";
 
 export default function RingSettings() {
@@ -75,6 +76,7 @@ export default function RingSettings() {
           eventLog={s.eventLog}
           lastRecognition={s.lastRecognition}
           audioFiles={s.audioFiles}
+          voiceState={s.voiceState}
           busy={s.busy}
           onToggleRecognition={s.toggleRecognition}
         />
@@ -87,6 +89,8 @@ export default function RingSettings() {
         busy={s.busy}
         onUpdate={s.updateMapping}
       />
+
+      <RingVoiceDebugPanel />
     </main>
   );
 }

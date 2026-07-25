@@ -57,6 +57,7 @@ export interface RingSettings {
   eventLog: EventLogItem[];
   lastRecognition: { name: string; confidence: number } | null;
   audioFiles: AudioFileInfo[];
+  voiceState: { state: string; instrument?: string; text?: string; message?: string } | null;
   lastError: string | null;
   busy: boolean;
   mapping: Record<string, string>;
@@ -89,6 +90,7 @@ export function useRingSettings(): RingSettings {
   const [busy, setBusy] = useState(false);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [techniques, setTechniques] = useState<{ code: string; name: string }[]>([]);
+  const [voiceState, setVoiceState] = useState<RingSettings["voiceState"]>(null);
 
   const controllersRef = useRef<Set<AbortController>>(new Set());
   const logSeq = useRef(0);
@@ -269,6 +271,20 @@ export function useRingSettings(): RingSettings {
           setAudioFiles((prev) => [...prev, ev.data]);
           break;
         }
+        case "voice": {
+          setVoiceState(ev.data);
+          const voiceText =
+            ev.data.state === "processing"
+              ? `语音识别中${ev.data.phase === "intent" ? `(${ev.data.text})` : ""}...`
+              : ev.data.state === "done"
+                ? `语音切换: ${ev.data.instrument}`
+                : ev.data.state === "no_match"
+                  ? `语音未匹配: ${ev.data.text || ""}`
+                  : `语音错误: ${ev.data.message || ""}`;
+          const voiceTone = ev.data.state === "done" ? "ok" : ev.data.state === "error" ? "danger" : "info";
+          pushLog(voiceText, voiceTone, ev.at);
+          break;
+        }
       }
     },
     [pushLog, refreshGestures],
@@ -350,6 +366,7 @@ export function useRingSettings(): RingSettings {
     eventLog,
     lastRecognition,
     audioFiles,
+    voiceState,
     lastError,
     busy,
     mapping,

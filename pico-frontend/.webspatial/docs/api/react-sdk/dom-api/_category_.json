@@ -1,0 +1,10 @@
+{
+  "label": "DOM API",
+  "position": 3,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk/dom-api",
+    "description": "DOM properties for depth, back offset, and runtime environment detection."
+  }
+}

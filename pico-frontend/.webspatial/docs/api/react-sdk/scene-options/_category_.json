@@ -1,0 +1,10 @@
+{
+  "label": "Scene Options",
+  "position": 7,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk/scene-options",
+    "description": "Scene configuration options for sizing, scaling, alignment, and window behavior."
+  }
+}

@@ -85,12 +85,104 @@ export const DIZI_NOTES: NoteButton[] = [
   })),
 ];
 
+export const PIANO_NOTES: NoteButton[] = [
+  ...NOTE_NAMES.map((name, i) => ({
+    code: `${name}_low` as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'low' as const,
+  })),
+  ...NOTE_NAMES.map((name, i) => ({
+    code: name as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'normal' as const,
+  })),
+  ...NOTE_NAMES.map((name, i) => ({
+    code: `${name}_high` as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'high' as const,
+  })),
+];
+
+export const GUITAR_NOTES: NoteButton[] = [
+  ...NOTE_NAMES.map((name, i) => ({
+    code: `${name}_low` as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'low' as const,
+  })),
+  ...NOTE_NAMES.map((name, i) => ({
+    code: name as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'normal' as const,
+  })),
+  ...NOTE_NAMES.map((name, i) => ({
+    code: `${name}_high` as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'high' as const,
+  })),
+];
+
+export const VIOLIN_NOTES: NoteButton[] = [
+  ...NOTE_NAMES.map((name, i) => ({
+    code: name as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'normal' as const,
+  })),
+  ...NOTE_NAMES.map((name, i) => ({
+    code: `${name}_high` as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'high' as const,
+  })),
+];
+
+export const FLUTE_NOTES: NoteButton[] = [
+  ...NOTE_NAMES.map((name, i) => ({
+    code: name as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'normal' as const,
+  })),
+  ...NOTE_NAMES.map((name, i) => ({
+    code: `${name}_high` as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'high' as const,
+  })),
+];
+
+export const BASS_NOTES: NoteButton[] = [
+  ...NOTE_NAMES.map((name, i) => ({
+    code: `${name}_low` as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'low' as const,
+  })),
+  ...NOTE_NAMES.map((name, i) => ({
+    code: name as NoteCode,
+    label: name,
+    degree: i + 1,
+    register: 'normal' as const,
+  })),
+];
+
 export const NOTES_BY_INSTRUMENT: Record<InstrumentCode, NoteButton[]> = {
   pipa: PIPA_NOTES,
   suona: SUONA_NOTES,
   guzheng: GUZHENG_NOTES,
   erhu: ERHU_NOTES,
   dizi: DIZI_NOTES,
+  piano: PIANO_NOTES,
+  guitar: GUITAR_NOTES,
+  violin: VIOLIN_NOTES,
+  flute: FLUTE_NOTES,
+  bass: BASS_NOTES,
 };
 
 export const NOTES: NoteButton[] = PIPA_NOTES;

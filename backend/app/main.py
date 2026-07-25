@@ -21,14 +21,17 @@ from fastapi.responses import JSONResponse
 from . import SERVICE_NAME, SERVICE_VERSION
 from .api import router
 from .audio_resource import AudioResource
-from .config import Config, load_config
+from .config import BASE_DIR, Config, load_config
 from .envelope import ApiError, error_body, new_request_id
 from .gesture import GestureStore, TechniqueRegistry
 from .orchestrator import Orchestrator
 from .playback import AfplayPlayer, PlaybackExecutor, Player
 from .ring_api import router as ring_router
 from .ring_manager import RingManager
+from .score_api import router as score_router
+from .score_store import ScoreStore
 from .state_store import StateStore
+from .voice_agent import VoiceAgent, VoiceConfig
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -56,10 +59,19 @@ def create_app(
         device=cfg.playback.device,
     )
     state_store = StateStore(max_size=cfg.history.maxSize)
-    orchestrator = Orchestrator(gesture_store, audio, playback, state_store)
+    scores_dir = BASE_DIR / "scores"
+    score_store = ScoreStore(
+        scores_dir,
+        on_change=lambda snap: state_store._publish({"type": "score", "data": snap}),
+    )
+    orchestrator = Orchestrator(gesture_store, audio, playback, state_store, score_store)
 
     ring_enabled = cfg.ring.enabled if start_ring is None else start_ring
-    ring_manager = RingManager(gesture_store, gesture_config=cfg.gesture, state_store=state_store)
+    voice_agent = None
+    if cfg.voice.enabled and cfg.voice.stepfun_api_key:
+        voice_agent = VoiceAgent(cfg.voice)
+        logger.info("语音指令已启用 (model=%s)", cfg.voice.llm_model)
+    ring_manager = RingManager(gesture_store, gesture_config=cfg.gesture, state_store=state_store, voice_agent=voice_agent)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -71,6 +83,8 @@ def create_app(
             yield
         finally:
             ring_manager.shutdown()
+            if voice_agent:
+                await voice_agent.close()
             await playback.stop()
 
     app = FastAPI(title=SERVICE_NAME, version=SERVICE_VERSION, lifespan=lifespan)
@@ -83,7 +97,9 @@ def create_app(
     app.state.playback = playback
     app.state.state_store = state_store
     app.state.orchestrator = orchestrator
+    app.state.score_store = score_store
     app.state.ring_manager = ring_manager
+    app.state.voice_agent = voice_agent
 
     # -- CORS (api.md §13：不使用通配，明确来源) ------------------------
     app.add_middleware(
@@ -145,6 +161,7 @@ def create_app(
 
     app.include_router(router)
     app.include_router(ring_router)
+    app.include_router(score_router)
     return app
 
 

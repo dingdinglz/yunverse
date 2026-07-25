@@ -57,11 +57,31 @@ export function usePreferences() {
     void saveSelectedKey(value);
   }, []);
 
+  // 远程更新（SSE 推送），仅更新本地状态，不回写后端
+  const applyRemoteSelection = useCallback(
+    (sel: { instrument?: string; key?: string }) => {
+      setPreferences((prev) => {
+        const next = { ...prev };
+        if (sel.instrument && sel.instrument !== prev.selectedInstrument) {
+          next.selectedInstrument = sel.instrument as InstrumentCode;
+          void saveSelectedInstrument(sel.instrument as InstrumentCode);
+        }
+        if (sel.key && sel.key !== prev.selectedKey) {
+          next.selectedKey = sel.key as KeySignature;
+          void saveSelectedKey(sel.key as KeySignature);
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
   return {
     preferences,
     loaded,
     setBackendBaseUrl,
     setSelectedInstrument,
     setSelectedKey,
+    applyRemoteSelection,
   };
 }

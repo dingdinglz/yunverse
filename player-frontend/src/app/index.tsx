@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackendConfigModal } from '@/components/backend-config-modal';
@@ -7,6 +7,7 @@ import { ConnectionStatusBar } from '@/components/connection-status-bar';
 import { CurrentSelection } from '@/components/current-selection';
 import { NoteButtonGrid } from '@/components/note-button-grid';
 import { PlayFeedback } from '@/components/play-feedback';
+import { ScorePicker } from '@/components/score-picker';
 import { SelectorModal } from '@/components/selector-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -16,6 +17,7 @@ import { useConnection } from '@/hooks/use-connection';
 import { useCxrInit } from '@/hooks/use-cxr-init';
 import { usePlay } from '@/hooks/use-play';
 import { usePreferences } from '@/hooks/use-preferences';
+import { useSseSync } from '@/hooks/use-sse-sync';
 import { useTheme } from '@/hooks/use-theme';
 import type { InstrumentCode, KeySignature, NoteCode } from '@/types/domain';
 
@@ -26,17 +28,19 @@ import type { InstrumentCode, KeySignature, NoteCode } from '@/types/domain';
 export default function PlayScreen() {
   useCxrInit();
   const theme = useTheme();
-  const { preferences, loaded, setBackendBaseUrl, setSelectedInstrument, setSelectedKey } =
+  const { preferences, loaded, setBackendBaseUrl, setSelectedInstrument, setSelectedKey, applyRemoteSelection } =
     usePreferences();
 
   const baseUrl = preferences.backendBaseUrl;
   const { status, retry } = useConnection(baseUrl);
+  useSseSync(baseUrl, status === 'connected', applyRemoteSelection);
   const { instruments, keys, notes, refresh } = useConfig(baseUrl, preferences.selectedInstrument);
   const { phase, pendingNote, recent, errorMessage, triggerPlay, stopPlay } = usePlay(baseUrl);
 
   const [instrumentModal, setInstrumentModal] = useState(false);
   const [keyModal, setKeyModal] = useState(false);
   const [backendModal, setBackendModal] = useState(false);
+  const [scoreModal, setScoreModal] = useState(false);
 
   const instrumentName = useMemo(
     () =>
@@ -103,6 +107,19 @@ export default function PlayScreen() {
             onChangeKey={() => setKeyModal(true)}
           />
 
+          <Pressable
+            onPress={() => setScoreModal(true)}
+            style={({ pressed }) => [
+              styles.scoreButton,
+              { backgroundColor: theme.accentSoft, opacity: pressed ? 0.7 : 1 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="选择曲谱">
+            <ThemedText type="smallBold" themeColor="accent">
+              🎵 曲谱模式
+            </ThemedText>
+          </Pressable>
+
           <View style={styles.playArea}>
             <ThemedText type="small" themeColor="textSecondary" style={styles.sectionLabel}>
               点击演奏
@@ -148,6 +165,12 @@ export default function PlayScreen() {
         }}
         onClose={() => setBackendModal(false)}
       />
+
+      <ScorePicker
+        visible={scoreModal}
+        baseUrl={baseUrl}
+        onClose={() => setScoreModal(false)}
+      />
     </ThemedView>
   );
 }
@@ -179,5 +202,10 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     paddingHorizontal: Spacing.half,
+  },
+  scoreButton: {
+    alignItems: 'center',
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.three,
   },
 });
