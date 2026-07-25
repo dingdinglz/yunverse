@@ -1,0 +1,10 @@
+{
+  "label": "JS API",
+  "position": 5,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk/js-api",
+    "description": "JavaScript APIs for scene setup, metrics, and coordinate conversion."
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "WebSpatial SDK Setup"
+  short_description: "Integrate WebSpatial SDK into an existing web project"
+  default_prompt: "Install and integrate WebSpatial SDK into this project using the local WebSpatial docs, and make the WebSpatial API ready to use."

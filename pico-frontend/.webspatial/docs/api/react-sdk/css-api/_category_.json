@@ -1,0 +1,10 @@
+{
+  "label": "CSS API",
+  "position": 2,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk/css-api",
+    "description": "CSS properties for spatial layout, depth, transforms, and material surfaces."
+  }
+}
