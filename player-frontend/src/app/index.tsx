@@ -17,6 +17,7 @@ import { useConnection } from '@/hooks/use-connection';
 import { useCxrInit } from '@/hooks/use-cxr-init';
 import { usePlay } from '@/hooks/use-play';
 import { usePreferences } from '@/hooks/use-preferences';
+import { useSseSync } from '@/hooks/use-sse-sync';
 import { useTheme } from '@/hooks/use-theme';
 import type { InstrumentCode, KeySignature, NoteCode } from '@/types/domain';
 
@@ -27,11 +28,12 @@ import type { InstrumentCode, KeySignature, NoteCode } from '@/types/domain';
 export default function PlayScreen() {
   useCxrInit();
   const theme = useTheme();
-  const { preferences, loaded, setBackendBaseUrl, setSelectedInstrument, setSelectedKey } =
+  const { preferences, loaded, setBackendBaseUrl, setSelectedInstrument, setSelectedKey, applyRemoteSelection } =
     usePreferences();
 
   const baseUrl = preferences.backendBaseUrl;
   const { status, retry } = useConnection(baseUrl);
+  useSseSync(baseUrl, status === 'connected', applyRemoteSelection);
   const { instruments, keys, notes, refresh } = useConfig(baseUrl, preferences.selectedInstrument);
   const { phase, pendingNote, recent, errorMessage, triggerPlay, stopPlay } = usePlay(baseUrl);
 

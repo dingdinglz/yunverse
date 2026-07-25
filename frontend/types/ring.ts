@@ -116,13 +116,26 @@ export interface AudioFileInfo {
   size: number;
 }
 
+export interface VoiceEvent extends RingEventBase {
+  type: "voice";
+  data: {
+    state: "processing" | "done" | "no_match" | "error";
+    phase?: "asr" | "intent";
+    instrument?: string;
+    text?: string;
+    reason?: string;
+    message?: string;
+  };
+}
+
 export type RingEvent =
   | StatusEvent
   | ImuEvent
   | DeviceEvent
   | RecognitionEvent
   | RecordingEvent
-  | AudioEvent;
+  | AudioEvent
+  | VoiceEvent;
 
 /** 单条测试事件日志项（前端派生） */
 export interface EventLogItem {

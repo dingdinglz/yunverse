@@ -11,4 +11,9 @@ export const INSTRUMENTS: Instrument[] = [
   { code: 'guzheng', name: '古筝', enabled: true },
   { code: 'erhu', name: '二胡', enabled: true },
   { code: 'dizi', name: '笛子', enabled: true },
+  { code: 'piano', name: '钢琴', enabled: true },
+  { code: 'guitar', name: '吉他', enabled: true },
+  { code: 'violin', name: '小提琴', enabled: true },
+  { code: 'flute', name: '长笛', enabled: true },
+  { code: 'bass', name: '贝斯', enabled: true },
 ];

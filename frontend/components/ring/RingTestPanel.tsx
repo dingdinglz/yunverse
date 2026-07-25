@@ -98,6 +98,7 @@ export default function RingTestPanel({
   eventLog,
   lastRecognition,
   audioFiles,
+  voiceState,
   busy,
   onToggleRecognition,
 }: {
@@ -106,6 +107,7 @@ export default function RingTestPanel({
   eventLog: EventLogItem[];
   lastRecognition: { name: string; confidence: number } | null;
   audioFiles: AudioFileInfo[];
+  voiceState: { state: string; instrument?: string; text?: string; message?: string } | null;
   busy: boolean;
   onToggleRecognition: (enabled: boolean) => void;
 }) {
@@ -172,6 +174,46 @@ export default function RingTestPanel({
               <p className="mt-2 text-sm text-muted">做一个已录制的手势试试。</p>
             )}
           </div>
+
+          {/* 语音指令状态 */}
+          {voiceState && (
+            <div
+              className={[
+                "rounded-xl border p-4",
+                voiceState.state === "done"
+                  ? "border-ok/30 bg-ok-soft"
+                  : voiceState.state === "error"
+                    ? "border-danger/30 bg-danger-soft"
+                    : "border-border bg-surface-muted",
+              ].join(" ")}
+            >
+              <span className="text-sm font-medium uppercase tracking-wide text-muted">
+                语音指令
+              </span>
+              <div className="mt-2 text-sm text-foreground">
+                {voiceState.state === "processing" && (
+                  <span className="flex items-center gap-2">
+                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-accent" />
+                    语音识别中...
+                  </span>
+                )}
+                {voiceState.state === "done" && (
+                  <span className="text-ok font-medium">
+                    已切换: {voiceState.instrument}
+                    {voiceState.text && <span className="ml-2 text-muted font-normal">({voiceState.text})</span>}
+                  </span>
+                )}
+                {voiceState.state === "no_match" && (
+                  <span className="text-warn">
+                    未匹配指令{voiceState.text && `："${voiceState.text}"`}
+                  </span>
+                )}
+                {voiceState.state === "error" && (
+                  <span className="text-danger">{voiceState.message || "语音处理失败"}</span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* 录音列表 */}
           {audioFiles.length > 0 && (

@@ -31,6 +31,7 @@ from .ring_manager import RingManager
 from .score_api import router as score_router
 from .score_store import ScoreStore
 from .state_store import StateStore
+from .voice_agent import VoiceAgent, VoiceConfig
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -66,7 +67,11 @@ def create_app(
     orchestrator = Orchestrator(gesture_store, audio, playback, state_store, score_store)
 
     ring_enabled = cfg.ring.enabled if start_ring is None else start_ring
-    ring_manager = RingManager(gesture_store, gesture_config=cfg.gesture, state_store=state_store)
+    voice_agent = None
+    if cfg.voice.enabled and cfg.voice.stepfun_api_key:
+        voice_agent = VoiceAgent(cfg.voice)
+        logger.info("语音指令已启用 (model=%s)", cfg.voice.llm_model)
+    ring_manager = RingManager(gesture_store, gesture_config=cfg.gesture, state_store=state_store, voice_agent=voice_agent)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -78,6 +83,8 @@ def create_app(
             yield
         finally:
             ring_manager.shutdown()
+            if voice_agent:
+                await voice_agent.close()
             await playback.stop()
 
     app = FastAPI(title=SERVICE_NAME, version=SERVICE_VERSION, lifespan=lifespan)
@@ -92,6 +99,7 @@ def create_app(
     app.state.orchestrator = orchestrator
     app.state.score_store = score_store
     app.state.ring_manager = ring_manager
+    app.state.voice_agent = voice_agent
 
     # -- CORS (api.md §13：不使用通配，明确来源) ------------------------
     app.add_middleware(

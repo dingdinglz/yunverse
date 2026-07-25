@@ -53,3 +53,7 @@ class MappingBody(BaseModel):
 
 class SingleMappingBody(BaseModel):
     technique: str | None = None
+
+
+class VoiceDebugRequest(BaseModel):
+    text: str

@@ -57,11 +57,13 @@ class RingManager:
         vendor_dir: Path = VENDOR_DIR,
         gesture_config: Any = None,
         state_store: Any = None,
+        voice_agent: Any = None,
     ):
         self._gesture = gesture_store
         self._vendor_dir = Path(vendor_dir)
         self._gesture_config = gesture_config
         self._state_store = state_store
+        self._voice_agent = voice_agent
 
         self._lock = threading.Lock()
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -635,6 +637,9 @@ class RingManager:
                     self._audio_files.append(entry)
                     self._publish("audio", {"state": "received", **entry})
                     self._publish("event", {"kind": "info", "message": f"录音已保存: {bundle.play_file_name}"})
+                    # 语音指令处理：非手动录制会话时，将录音交给 VoiceAgent
+                    if self._voice_agent is not None and self._rec is None:
+                        asyncio.ensure_future(self._process_voice_command(entry["path"]))
                 except Exception as e:
                     raw_path = output_dir / f"recording_{file_index}.bin"
                     raw_path.write_bytes(raw_audio)
@@ -664,6 +669,29 @@ class RingManager:
 
     def list_audio_files(self) -> list[dict]:
         return list(self._audio_files)
+
+    # ------------------------------------------------------------------ #
+    # 语音指令处理
+    # ------------------------------------------------------------------ #
+    async def _process_voice_command(self, audio_path: str) -> None:
+        """将接收到的录音交给 VoiceAgent 进行语音指令识别与乐器切换。"""
+        try:
+            result = await self._voice_agent.process_voice_command(
+                audio_path, self._state_store, self._publish
+            )
+            if result and result.get("switched"):
+                self._publish("event", {
+                    "kind": "info",
+                    "message": f"语音切换乐器: {result['instrument']} (识别: {result.get('text', '')})",
+                })
+            elif result:
+                self._publish("event", {
+                    "kind": "warn",
+                    "message": f"语音未匹配指令: {result.get('text', '')}",
+                })
+        except Exception as e:
+            logger.error("语音指令处理异常: %s", e)
+            self._publish("voice", {"state": "error", "message": str(e)})
 
     # ------------------------------------------------------------------ #
     # 手动逐次录制
