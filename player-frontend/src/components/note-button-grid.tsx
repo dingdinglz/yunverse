@@ -162,9 +162,16 @@ function NoteButtonItem({ note, pending, onPress, sustainEnabled, onLongPress, o
       {pending ? (
         <ActivityIndicator color={theme.accentText} />
       ) : (
-        <ThemedText type="title" style={styles.label}>
-          {note.label}
-        </ThemedText>
+        <View style={styles.labelGroup}>
+          <ThemedText type="title" style={styles.label}>
+            {note.label}
+          </ThemedText>
+          {note.degree != null && (
+            <ThemedText type="small" style={[styles.degree, { color: theme.textSecondary }]}>
+              {note.degree}
+            </ThemedText>
+          )}
+        </View>
       )}
     </Pressable>
   );
@@ -190,12 +197,21 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.two,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: Spacing.one,
   },
   spacer: {
     flex: 1,
   },
+  labelGroup: {
+    alignItems: 'center',
+  },
   label: {
     fontSize: 22,
-    lineHeight: 28,
+    lineHeight: 26,
+  },
+  degree: {
+    fontSize: 11,
+    lineHeight: 14,
+    marginTop: 1,
   },
 });
