@@ -25,3 +25,11 @@ export function play(baseUrl: string, payload: PlayRequest): Promise<PlayData> {
 export function stopPlay(baseUrl: string): Promise<{ stopped: boolean }> {
   return request<{ stopped: boolean }>(baseUrl, '/play/stop', { method: 'POST' });
 }
+
+/** POST /api/v1/selection —— 同步当前乐器/音调选择到后端。 */
+export function syncSelection(
+  baseUrl: string,
+  payload: { instrument?: string; key?: string },
+): Promise<{ instrument: string | null; key: string | null }> {
+  return request(baseUrl, '/selection', { method: 'POST', body: payload });
+}

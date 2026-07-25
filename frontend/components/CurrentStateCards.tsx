@@ -7,6 +7,7 @@ import {
 } from "@/lib/format";
 import { EMPTY_PLACEHOLDER } from "@/constants/enums";
 import type { AppConfig, CurrentState } from "@/types/domain";
+import type { Selection } from "@/lib/useDashboardData";
 
 /** 单个信息块 */
 function InfoCard({
@@ -37,12 +38,19 @@ function InfoCard({
 export default function CurrentStateCards({
   state,
   config,
+  selection,
 }: {
   state: CurrentState | null;
   config: AppConfig | null;
+  selection: Selection;
 }) {
-  const instrument = resolveInstrumentName(state?.instrument);
-  const key = state?.key ?? EMPTY_PLACEHOLDER;
+  const selInstrument = selection.instrument
+    ? config?.instruments.find((i) => i.code === selection.instrument)
+    : null;
+  const instrument = selInstrument
+    ? selInstrument.name
+    : resolveInstrumentName(state?.instrument);
+  const key = selection.key ?? state?.key ?? EMPTY_PLACEHOLDER;
   const technique = state?.technique
     ? resolveTechniqueName(state.technique, config)
     : resolveTechniqueName(null, config);

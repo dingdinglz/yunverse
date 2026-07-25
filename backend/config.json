@@ -12,7 +12,7 @@
     "maxQueue": 32
   },
   "gesture": {
-    "method": "hmm",
+    "method": "dtw",
     "expireMs": 1000,
     "fallbackTechnique": "normal",
     "mapping": {},

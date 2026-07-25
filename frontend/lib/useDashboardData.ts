@@ -1,20 +1,11 @@
 "use client";
 
-// 仪表盘数据编排 hook：
-// - 挂载即并行拉取 health + state + history（web-frontend.md §8.1）
-// - 之后 state 每 1s、history 每 3s 轮询（§8.2）
-// - 请求失败不清空旧数据，仅置连接状态为 disconnected（§8.4）
-// - 卸载时清定时器并中断在途请求
-
 import { useCallback, useEffect, useRef, useState } from "react";
+import { apiUrl } from "@/lib/apiClient";
 import { getConfig, getHistory, getState } from "@/lib/services";
 import { getRingStatus } from "@/lib/ringService";
 import { mergeHistory } from "@/lib/format";
-import {
-  HISTORY_LIMIT,
-  HISTORY_POLL_MS,
-  STATE_POLL_MS,
-} from "@/constants/enums";
+import { HISTORY_LIMIT } from "@/constants/enums";
 import { ApiClientError } from "@/types/api";
 import type {
   AppConfig,
@@ -24,16 +15,22 @@ import type {
 } from "@/types/domain";
 import type { RingConnection } from "@/types/ring";
 
+const SSE_RECONNECT_MS = 3000;
+
+export interface Selection {
+  instrument: string | null;
+  key: string | null;
+}
+
 export interface DashboardData {
   state: CurrentState | null;
   history: HistoryItem[];
   config: AppConfig | null;
   connection: ConnectionStatus;
   ringConnection: RingConnection;
-  /** 最近一次错误信息（用于 ErrorBanner）；连接恢复后清空 */
   lastError: string | null;
-  /** 首屏是否仍在加载（尚未拿到任何一次成功数据） */
   initialLoading: boolean;
+  selection: Selection;
 }
 
 export function useDashboardData(): DashboardData {
@@ -44,103 +41,125 @@ export function useDashboardData(): DashboardData {
   const [ringConnection, setRingConnection] = useState<RingConnection>("disconnected");
   const [lastError, setLastError] = useState<string | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [selection, setSelection] = useState<Selection>({ instrument: null, key: null });
 
-  // 在途请求的 abort 控制器集合，卸载时统一中断
-  const controllersRef = useRef<Set<AbortController>>(new Set());
+  const esRef = useRef<EventSource | null>(null);
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
 
-  const newController = useCallback(() => {
-    const c = new AbortController();
-    controllersRef.current.add(c);
-    return c;
-  }, []);
+  const newController = useCallback(() => new AbortController(), []);
 
-  const releaseController = useCallback((c: AbortController) => {
-    controllersRef.current.delete(c);
-  }, []);
-
-  const toErrorMessage = useCallback((err: unknown): string => {
-    if (err instanceof ApiClientError) return err.message;
-    return "未知错误";
-  }, []);
-
-  // 拉取当前状态：成功 -> connected + 清错误；失败 -> disconnected + 记错误（保留旧数据）
-  const refreshState = useCallback(async () => {
-    const c = newController();
+  const refreshConfig = useCallback(async () => {
     try {
-      const next = await getState(c.signal);
-      setState(next);
-      setConnection("connected");
-      setLastError(null);
-    } catch (err) {
-      if (c.signal.aborted) return;
-      setConnection("disconnected");
-      setLastError(toErrorMessage(err));
-    } finally {
-      releaseController(c);
-    }
-  }, [newController, releaseController, toErrorMessage]);
-
-  // 拉取历史：合并去重排序（保留旧数据，失败不清空）
-  const refreshHistory = useCallback(async () => {
-    const c = newController();
-    try {
-      const page = await getHistory(HISTORY_LIMIT, c.signal);
-      setHistory((prev) => mergeHistory(prev, page.items, HISTORY_LIMIT));
+      setConfig(await getConfig());
     } catch {
-      // 历史失败不改连接状态（以 state 轮询为准），保留旧列表
-    } finally {
-      releaseController(c);
+      // fallback to local defaults
     }
-  }, [newController, releaseController]);
+  }, []);
 
-  // 拉取戒指连接状态
   const refreshRingStatus = useCallback(async () => {
-    const c = newController();
     try {
-      const rs = await getRingStatus(c.signal);
+      const rs = await getRingStatus();
       setRingConnection(rs.connection);
     } catch {
-      // 戒指状态拉取失败不影响主连接状态
-    } finally {
-      releaseController(c);
+      // ignore
     }
-  }, [newController, releaseController]);
+  }, []);
 
-  // 拉取配置（用于技法名映射），失败则回退本地默认枚举
-  const refreshConfig = useCallback(async () => {
-    const c = newController();
+  const refreshHistory = useCallback(async () => {
     try {
-      setConfig(await getConfig(c.signal));
+      const page = await getHistory(HISTORY_LIMIT);
+      setHistory((prev) => mergeHistory(prev, page.items, HISTORY_LIMIT));
     } catch {
-      // 忽略：resolveTechniqueName 会回退到本地默认
-    } finally {
-      releaseController(c);
+      // keep old data
     }
-  }, [newController, releaseController]);
+  }, []);
+
+  const connectSSE = useCallback(() => {
+    if (!mountedRef.current) return;
+    if (esRef.current) {
+      esRef.current.close();
+    }
+
+    const es = new EventSource(apiUrl("/events"));
+    esRef.current = es;
+
+    es.onmessage = (ev) => {
+      if (!mountedRef.current) return;
+      try {
+        const msg = JSON.parse(ev.data) as { type: string; data: unknown };
+        if (msg.type === "state") {
+          setState(msg.data as CurrentState);
+          setConnection("connected");
+          setLastError(null);
+        } else if (msg.type === "selection") {
+          setSelection(msg.data as Selection);
+        } else if (msg.type === "play") {
+          const item = msg.data as HistoryItem;
+          setState((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              instrument: item.instrument,
+              key: item.key,
+              note: item.note,
+              technique: item.technique,
+              playback: {
+                status: item.playback.status === "played" ? "played" : prev.playback.status,
+                lastPlayedAt: item.createdAt,
+                lastEventId: item.eventId,
+              },
+            };
+          });
+          setHistory((prev) => mergeHistory(prev, [item], HISTORY_LIMIT));
+          setConnection("connected");
+          setLastError(null);
+        }
+      } catch {
+        // malformed SSE frame, ignore
+      }
+    };
+
+    es.onopen = () => {
+      if (!mountedRef.current) return;
+      setConnection("connected");
+      setLastError(null);
+    };
+
+    es.onerror = () => {
+      if (!mountedRef.current) return;
+      es.close();
+      esRef.current = null;
+      setConnection("reconnecting");
+      setLastError("SSE 连接中断，正在重连…");
+      reconnectTimer.current = setTimeout(connectSSE, SSE_RECONNECT_MS);
+    };
+  }, []);
 
   useEffect(() => {
-    let stateTimer: ReturnType<typeof setInterval> | null = null;
-    let historyTimer: ReturnType<typeof setInterval> | null = null;
-    const controllers = controllersRef.current;
+    mountedRef.current = true;
 
-    // 首屏：并行拉取，结束后关闭初始 loading
     (async () => {
-      await Promise.allSettled([refreshConfig(), refreshState(), refreshHistory(), refreshRingStatus()]);
+      await Promise.allSettled([refreshConfig(), refreshHistory(), refreshRingStatus()]);
       setInitialLoading(false);
     })();
 
-    stateTimer = setInterval(refreshState, STATE_POLL_MS);
-    historyTimer = setInterval(refreshHistory, HISTORY_POLL_MS);
-    const ringTimer = setInterval(refreshRingStatus, HISTORY_POLL_MS);
+    connectSSE();
+
+    const ringTimer = setInterval(refreshRingStatus, 5000);
 
     return () => {
-      if (stateTimer) clearInterval(stateTimer);
-      if (historyTimer) clearInterval(historyTimer);
+      mountedRef.current = false;
+      if (esRef.current) {
+        esRef.current.close();
+        esRef.current = null;
+      }
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current);
+      }
       clearInterval(ringTimer);
-      controllers.forEach((c) => c.abort());
-      controllers.clear();
     };
-  }, [refreshConfig, refreshState, refreshHistory, refreshRingStatus]);
+  }, [connectSSE, refreshConfig, refreshHistory, refreshRingStatus]);
 
-  return { state, history, config, connection, ringConnection, lastError, initialLoading };
+  return { state, history, config, connection, ringConnection, lastError, initialLoading, selection };
 }

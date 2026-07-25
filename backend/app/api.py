@@ -6,12 +6,18 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
+
 from fastapi import APIRouter, Request
+from fastapi.responses import StreamingResponse
 
 from . import SERVICE_NAME, SERVICE_VERSION
 from .constants import INSTRUMENTS, INSTRUMENT_NOTES, KEYS, NOTES
 from .envelope import ApiError, iso_now, new_request_id, success_body
-from .schemas import PlayRequest, RingGestureRequest
+from .schemas import PlayRequest, RingGestureRequest, SelectionRequest
+
+SSE_HEARTBEAT_S = 15.0
 
 router = APIRouter(prefix="/api/v1")
 
@@ -138,3 +144,60 @@ async def ring_gesture(request: Request, body: RingGestureRequest):
             "updatedAt": updated_at,
         }
     )
+
+
+# ---------------------------------------------------------------------------
+# 10. 选择同步（乐器/音调切换上报）
+# ---------------------------------------------------------------------------
+@router.post("/selection")
+async def update_selection(request: Request, body: SelectionRequest):
+    state_store = request.app.state.state_store
+    snapshot = state_store.update_selection(body.instrument, body.key)
+    return success_body(snapshot)
+
+
+@router.get("/selection")
+async def get_selection(request: Request):
+    state_store = request.app.state.state_store
+    return success_body(state_store.selection())
+
+
+# ---------------------------------------------------------------------------
+# 11. SSE 实时事件流
+# ---------------------------------------------------------------------------
+@router.get("/events")
+async def events(request: Request):
+    """SSE 推送演奏事件，前端据此实时刷新仪表盘。"""
+    state_store = request.app.state.state_store
+    gesture_store = request.app.state.gesture_store
+    loop = asyncio.get_running_loop()
+    queue: asyncio.Queue = asyncio.Queue(maxsize=1000)
+    token = state_store.subscribe(queue, loop)
+
+    async def gen():
+        try:
+            current = state_store.current()
+            current["ring"] = gesture_store.snapshot().to_public()
+            yield _sse_frame({"type": "state", "data": current})
+            yield _sse_frame({"type": "selection", "data": state_store.selection()})
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    item = await asyncio.wait_for(queue.get(), timeout=SSE_HEARTBEAT_S)
+                except asyncio.TimeoutError:
+                    yield ": ping\n\n"
+                    continue
+                yield _sse_frame(item)
+        finally:
+            state_store.unsubscribe(token)
+
+    return StreamingResponse(
+        gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _sse_frame(item: dict) -> str:
+    return f"data: {json.dumps(item, ensure_ascii=False)}\n\n"

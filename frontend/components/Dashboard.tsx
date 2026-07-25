@@ -10,7 +10,7 @@ import SkeletonDashboard from "@/components/SkeletonDashboard";
 import { useDashboardData } from "@/lib/useDashboardData";
 
 export default function Dashboard() {
-  const { state, history, config, connection, ringConnection, lastError, initialLoading } =
+  const { state, history, config, connection, ringConnection, lastError, initialLoading, selection } =
     useDashboardData();
 
   return (
@@ -46,7 +46,7 @@ export default function Dashboard() {
         <SkeletonDashboard />
       ) : (
         <>
-          <CurrentStateCards state={state} config={config} />
+          <CurrentStateCards state={state} config={config} selection={selection} />
           <HistoryTable items={history} config={config} />
         </>
       )}

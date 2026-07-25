@@ -8,6 +8,7 @@ import {
   saveSelectedKey,
   type Preferences,
 } from '@/storage/preferences';
+import { syncSelection } from '@/services/play-service';
 import type { InstrumentCode, KeySignature } from '@/types/domain';
 
 /**
@@ -24,6 +25,10 @@ export function usePreferences() {
       if (active) {
         setPreferences(prefs);
         setLoaded(true);
+        syncSelection(prefs.backendBaseUrl, {
+          instrument: prefs.selectedInstrument,
+          key: prefs.selectedKey,
+        }).catch(() => {});
       }
     });
     return () => {
@@ -37,12 +42,18 @@ export function usePreferences() {
   }, []);
 
   const setSelectedInstrument = useCallback((value: InstrumentCode) => {
-    setPreferences((prev) => ({ ...prev, selectedInstrument: value }));
+    setPreferences((prev) => {
+      syncSelection(prev.backendBaseUrl, { instrument: value }).catch(() => {});
+      return { ...prev, selectedInstrument: value };
+    });
     void saveSelectedInstrument(value);
   }, []);
 
   const setSelectedKey = useCallback((value: KeySignature) => {
-    setPreferences((prev) => ({ ...prev, selectedKey: value }));
+    setPreferences((prev) => {
+      syncSelection(prev.backendBaseUrl, { key: value }).catch(() => {});
+      return { ...prev, selectedKey: value };
+    });
     void saveSelectedKey(value);
   }, []);
 

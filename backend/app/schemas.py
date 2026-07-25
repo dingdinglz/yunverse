@@ -40,3 +40,8 @@ class RecordStartRequest(BaseModel):
 
 class RecognitionRequest(BaseModel):
     enabled: bool
+
+
+class SelectionRequest(BaseModel):
+    instrument: str | None = None
+    key: str | None = None
