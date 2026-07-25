@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { apiUrl } from "../config";
-import type { PlayState } from "../types/play-state";
+import type { PlayState, ScoreState } from "../types/play-state";
 
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting";
 
@@ -18,6 +18,7 @@ interface PlayEvent {
 // 逻辑对齐 frontend/lib/useDashboardData.ts，但只取 HUD 需要的字段。
 export function usePlayState() {
   const [state, setState] = useState<PlayState | null>(null);
+  const [scoreState, setScoreState] = useState<ScoreState | null>(null);
   const [connection, setConnection] = useState<ConnectionStatus>("connecting");
   const esRef = useRef<EventSource | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,6 +59,8 @@ export function usePlayState() {
               technique: item.technique,
               playback: { status: item.playback.status },
             });
+          } else if (msg.type === "score") {
+            setScoreState(msg.data as ScoreState);
           }
         } catch {
           // 忽略格式异常的帧
@@ -83,5 +86,5 @@ export function usePlayState() {
     };
   }, []);
 
-  return { state, connection };
+  return { state, scoreState, connection };
 }

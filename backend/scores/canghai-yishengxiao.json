@@ -1,0 +1,65 @@
+{
+  "id": "canghai-yishengxiao",
+  "title": "沧海一声笑",
+  "key": "D",
+  "timeSignature": "4/4",
+  "tempo": 80,
+  "instrument": "pipa",
+  "notes": [
+    {"code": "la", "duration": 0.75, "lyric": "沧"},
+    {"code": "so", "duration": 0.25, "lyric": "海"},
+    {"code": "mi", "duration": 0.5, "lyric": "一"},
+    {"code": "ri", "duration": 0.5, "lyric": "声"},
+    {"code": "do", "duration": 2, "lyric": "笑"},
+
+    {"code": "mi", "duration": 0.75, "lyric": "滔"},
+    {"code": "ri", "duration": 0.25, "lyric": "滔"},
+    {"code": "do", "duration": 0.5, "lyric": "两"},
+    {"code": "la", "duration": 0.5, "lyric": "岸"},
+    {"code": "so", "duration": 2, "lyric": "潮"},
+
+    {"code": "so", "duration": 0.75, "lyric": "浮"},
+    {"code": "la", "duration": 0.25, "lyric": "沉"},
+    {"code": "so", "duration": 0.5, "lyric": "随"},
+    {"code": "la", "duration": 0.5, "lyric": "浪"},
+    {"code": "do", "duration": 0.75, "lyric": ""},
+    {"code": "ri", "duration": 0.25, "lyric": ""},
+    {"code": "mi", "duration": 0.5, "lyric": "记"},
+    {"code": "so", "duration": 0.5, "lyric": "今"},
+
+    {"code": "la", "duration": 0.75, "lyric": ""},
+    {"code": "so", "duration": 0.25, "lyric": "朝"},
+    {"code": "mi", "duration": 0.5, "lyric": ""},
+    {"code": "ri", "duration": 0.25, "lyric": ""},
+    {"code": "do", "duration": 0.25, "lyric": ""},
+    {"code": "ri", "duration": 2, "lyric": ""},
+
+    {"code": "la", "duration": 0.75, "lyric": "苍"},
+    {"code": "so", "duration": 0.25, "lyric": "天"},
+    {"code": "mi", "duration": 0.5, "lyric": "笑"},
+    {"code": "ri", "duration": 0.5, "lyric": ""},
+    {"code": "do", "duration": 2, "lyric": ""},
+
+    {"code": "mi", "duration": 0.75, "lyric": "纷"},
+    {"code": "ri", "duration": 0.25, "lyric": "纷"},
+    {"code": "do", "duration": 0.5, "lyric": "世"},
+    {"code": "la", "duration": 0.5, "lyric": "上"},
+    {"code": "so", "duration": 2, "lyric": "潮"},
+
+    {"code": "so", "duration": 0.75, "lyric": "谁"},
+    {"code": "la", "duration": 0.25, "lyric": "负"},
+    {"code": "so", "duration": 0.5, "lyric": "谁"},
+    {"code": "la", "duration": 0.5, "lyric": "胜"},
+    {"code": "do", "duration": 0.75, "lyric": "出"},
+    {"code": "ri", "duration": 0.25, "lyric": "天"},
+    {"code": "mi", "duration": 0.5, "lyric": "知"},
+    {"code": "so", "duration": 0.5, "lyric": ""},
+
+    {"code": "la", "duration": 0.75, "lyric": ""},
+    {"code": "so", "duration": 0.25, "lyric": "晓"},
+    {"code": "mi", "duration": 0.5, "lyric": ""},
+    {"code": "ri", "duration": 0.25, "lyric": ""},
+    {"code": "do", "duration": 0.25, "lyric": ""},
+    {"code": "do", "duration": 2, "lyric": ""}
+  ]
+}

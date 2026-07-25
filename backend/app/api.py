@@ -180,6 +180,9 @@ async def events(request: Request):
             current["ring"] = gesture_store.snapshot().to_public()
             yield _sse_frame({"type": "state", "data": current})
             yield _sse_frame({"type": "selection", "data": state_store.selection()})
+            # 曲谱模式状态
+            score_store = request.app.state.score_store
+            yield _sse_frame({"type": "score", "data": score_store.active_state()})
             while True:
                 if await request.is_disconnected():
                     break

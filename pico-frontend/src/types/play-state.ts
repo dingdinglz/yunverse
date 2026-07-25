@@ -18,3 +18,24 @@ export interface PlayState {
     status: string;
   };
 }
+
+// 曲谱模式状态（对齐 backend/app/score_store.py 的 snapshot 结构）
+export interface ScoreNote {
+  code: string;
+  duration: number;
+  lyric?: string;
+  index: number;
+  active: boolean;
+}
+
+export interface ScoreState {
+  active: boolean;
+  scoreId: string | null;
+  title?: string;
+  instrument?: string;
+  key?: string;
+  tempo?: number;
+  currentIndex: number;
+  totalNotes: number;
+  notes: ScoreNote[];
+}
