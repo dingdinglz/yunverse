@@ -3,13 +3,21 @@ const { withProjectBuildGradle, withGradleProperties } = require('expo/config-pl
 function withRokidMaven(config) {
   return withProjectBuildGradle(config, (mod) => {
     if (mod.modResults.language === 'groovy') {
-      const buildGradle = mod.modResults.contents;
+      let buildGradle = mod.modResults.contents;
       if (!buildGradle.includes('maven.rokid.com')) {
-        mod.modResults.contents = buildGradle.replace(
+        buildGradle = buildGradle.replace(
           /maven\s*\{\s*url\s*'https:\/\/www\.jitpack\.io'\s*\}/,
           `maven { url 'https://www.jitpack.io' }\n    maven { url 'https://maven.rokid.com/repository/maven-public/' }`
         );
       }
+      // Inject ext { minSdkVersion = 31 } before expo-root-project plugin
+      if (!buildGradle.includes('ext {')) {
+        buildGradle = buildGradle.replace(
+          /apply plugin: "expo-root-project"/,
+          `ext {\n  minSdkVersion = 31\n}\n\napply plugin: "expo-root-project"`
+        );
+      }
+      mod.modResults.contents = buildGradle;
     }
     return mod;
   });
@@ -22,7 +30,7 @@ module.exports = (config) => {
     config.android.minSdkVersion = 31;
   }
 
-  // Inject Rokid maven repository
+  // Inject Rokid maven repository + minSdkVersion ext
   config = withRokidMaven(config);
 
   return config;
