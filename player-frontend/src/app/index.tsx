@@ -111,7 +111,7 @@ export default function PlayScreen() {
               notes={notes}
               pendingNote={pendingNote}
               onPressNote={handlePlay}
-              sustainEnabled={preferences.selectedInstrument === 'suona'}
+              sustainEnabled={preferences.selectedInstrument === 'suona' || preferences.selectedInstrument === 'dizi'}
               onLongPressNote={handleLongPressPlay}
               onReleaseNote={handleRelease}
             />

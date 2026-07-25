@@ -21,10 +21,10 @@ def test_resolve_found(tmp_path):
 
 
 def test_key_conversion_path(tmp_path):
-    _make(tmp_path, "guitar/C_sharp/normal/do_high.wav")
+    _make(tmp_path, "pipa/C_sharp/normal/do_high.wav")
     ar = AudioResource(tmp_path, root_name="audio")
-    r = ar.resolve("guitar", "C#", "do_high", "normal")
-    assert r["path"] == "audio/guitar/C_sharp/normal/do_high.wav"
+    r = ar.resolve("pipa", "C#", "do_high", "normal")
+    assert r["path"] == "audio/pipa/C_sharp/normal/do_high.wav"
 
 
 def test_fallback_to_normal(tmp_path):

@@ -15,7 +15,7 @@ interface ConfigState {
 }
 
 export function useConfig(baseUrl: string, selectedInstrument: InstrumentCode) {
-  const localNotes = NOTES_BY_INSTRUMENT[selectedInstrument] ?? NOTES_BY_INSTRUMENT.guitar;
+  const localNotes = NOTES_BY_INSTRUMENT[selectedInstrument] ?? NOTES_BY_INSTRUMENT.pipa;
 
   const [state, setState] = useState<ConfigState>({
     instruments: INSTRUMENTS,

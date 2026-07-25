@@ -34,15 +34,17 @@ def test_config(client):
     b = client.get("/api/v1/config").json()
     assert b["success"] is True
     data = b["data"]
-    assert [i["code"] for i in data["instruments"]] == ["guitar", "pipa", "suona"]
+    assert [i["code"] for i in data["instruments"]] == ["pipa", "suona", "guzheng", "erhu", "dizi"]
     assert all(i["enabled"] for i in data["instruments"])
     assert data["keys"][0] == "C"
     assert len(data["keys"]) == 17
-    assert [n["code"] for n in data["notes"]][-1] == "xi"
+    assert [n["code"] for n in data["notes"]][-1] == "so_high"
     assert "notesByInstrument" in data
-    assert len(data["notesByInstrument"]["pipa"]) == 15
-    assert len(data["notesByInstrument"]["guitar"]) == 7
+    assert len(data["notesByInstrument"]["pipa"]) == 14
     assert len(data["notesByInstrument"]["suona"]) == 9
+    assert len(data["notesByInstrument"]["guzheng"]) == 7
+    assert len(data["notesByInstrument"]["erhu"]) == 12
+    assert len(data["notesByInstrument"]["dizi"]) == 16
     assert data["techniques"][0]["code"] == "normal"
 
 
@@ -63,11 +65,11 @@ def test_play_success_default_technique(client):
 
 
 def test_play_audio_not_found(client):
-    r = client.post("/api/v1/play", json={"instrument": "guitar", "key": "C", "note": "do"})
+    r = client.post("/api/v1/play", json={"instrument": "pipa", "key": "C", "note": "do"})
     assert r.status_code == 404
     e = r.json()["error"]
     assert e["code"] == "AUDIO_NOT_FOUND"
-    assert e["details"]["expectedPath"].endswith("guitar/C/normal/do.wav")
+    assert e["details"]["expectedPath"].endswith("pipa/C/normal/do.wav")
 
 
 def test_play_invalid_instrument(client):
@@ -76,7 +78,7 @@ def test_play_invalid_instrument(client):
     e = r.json()["error"]
     assert e["code"] == "INVALID_PARAMETER"
     assert e["details"]["field"] == "instrument"
-    assert "guitar" in e["details"]["allowedValues"]
+    assert "pipa" in e["details"]["allowedValues"]
 
 
 def test_play_missing_field(client):

@@ -26,7 +26,7 @@ def test_note_object():
 
 def test_instrument_object():
     assert instrument_object("pipa") == {"code": "pipa", "name": "琵琶"}
-    assert instrument_object("guitar") == {"code": "guitar", "name": "吉他"}
+    assert instrument_object("guzheng") == {"code": "guzheng", "name": "古筝"}
     assert instrument_object("drum") is None
 
 
@@ -38,5 +38,5 @@ def test_validators_and_order():
     # 顺序严格对齐 api.md §2.6
     assert KEYS[0] == "C" and KEYS[1] == "C#" and KEYS[-1] == "B"
     assert len(KEYS) == 17
-    assert [n["code"] for n in NOTES][-1] == "xi"
-    assert len(NOTES) == 7
+    assert [n["code"] for n in NOTES][-1] == "so_high"
+    assert len(NOTES) == 14

@@ -6,7 +6,9 @@ import type { Instrument } from '@/types/domain';
  * 用作后端 config 接口不可用时的回退。
  */
 export const INSTRUMENTS: Instrument[] = [
-  { code: 'guitar', name: '吉他', enabled: true },
   { code: 'pipa', name: '琵琶', enabled: true },
   { code: 'suona', name: '唢呐', enabled: true },
+  { code: 'guzheng', name: '古筝', enabled: true },
+  { code: 'erhu', name: '二胡', enabled: true },
+  { code: 'dizi', name: '笛子', enabled: true },
 ];

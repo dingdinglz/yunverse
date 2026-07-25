@@ -16,7 +16,7 @@ export const API_PREFIX = '/api/v1';
 export const REQUEST_TIMEOUT_MS = 8000;
 
 /** 默认乐器 / 音调（本地无记录时使用），见 mobile-client.md §6.1。 */
-export const DEFAULT_INSTRUMENT = 'guitar' as const;
+export const DEFAULT_INSTRUMENT = 'pipa' as const;
 export const DEFAULT_KEY = 'C' as const;
 
 /** 本地存储 key，见 mobile-client.md §6.7。 */

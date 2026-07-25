@@ -10,9 +10,11 @@ from __future__ import annotations
 # ---------------------------------------------------------------------------
 # code -> 中文展示名
 INSTRUMENTS: dict[str, str] = {
-    "guitar": "吉他",
     "pipa": "琵琶",
     "suona": "唢呐",
+    "guzheng": "古筝",
+    "erhu": "二胡",
+    "dizi": "笛子",
 }
 
 
@@ -31,17 +33,21 @@ _KEYS_SET = set(KEYS)
 # ---------------------------------------------------------------------------
 _NOTE_NAMES = ["do", "ri", "mi", "fa", "so", "la", "xi"]
 
-GUITAR_NOTES: list[dict] = [
-    {"code": name, "label": name, "degree": i, "register": "normal"}
-    for i, name in enumerate(_NOTE_NAMES, 1)
-]
-
 PIPA_NOTES: list[dict] = [
-    *[{"code": f"{name}_low", "label": name, "degree": i, "register": "low"}
-      for i, name in enumerate(_NOTE_NAMES, 1)],
-    *[{"code": name, "label": name, "degree": i, "register": "normal"}
-      for i, name in enumerate(_NOTE_NAMES, 1)],
+    {"code": "do_low", "label": "do", "degree": 1, "register": "low"},
+    {"code": "so_low", "label": "so", "degree": 5, "register": "low"},
+    {"code": "la_low", "label": "la", "degree": 6, "register": "low"},
+    {"code": "do", "label": "do", "degree": 1, "register": "normal"},
+    {"code": "ri", "label": "ri", "degree": 2, "register": "normal"},
+    {"code": "mi", "label": "mi", "degree": 3, "register": "normal"},
+    {"code": "fa", "label": "fa", "degree": 4, "register": "normal"},
+    {"code": "so", "label": "so", "degree": 5, "register": "normal"},
+    {"code": "xi", "label": "xi", "degree": 7, "register": "normal"},
     {"code": "do_high", "label": "do", "degree": 1, "register": "high"},
+    {"code": "ri_high", "label": "ri", "degree": 2, "register": "high"},
+    {"code": "mi_high", "label": "mi", "degree": 3, "register": "high"},
+    {"code": "fa_high", "label": "fa", "degree": 4, "register": "high"},
+    {"code": "so_high", "label": "so", "degree": 5, "register": "high"},
 ]
 
 SUONA_NOTES: list[dict] = [
@@ -51,13 +57,49 @@ SUONA_NOTES: list[dict] = [
       for i, name in enumerate(_NOTE_NAMES[:6], 1)],
 ]
 
+GUZHENG_NOTES: list[dict] = [
+    {"code": "so_low", "label": "so", "degree": 5, "register": "low"},
+    {"code": "la_low", "label": "la", "degree": 6, "register": "low"},
+    {"code": "do", "label": "do", "degree": 1, "register": "normal"},
+    {"code": "ri", "label": "ri", "degree": 2, "register": "normal"},
+    {"code": "mi", "label": "mi", "degree": 3, "register": "normal"},
+    {"code": "so", "label": "so", "degree": 5, "register": "normal"},
+    {"code": "la", "label": "la", "degree": 6, "register": "normal"},
+]
+
+ERHU_NOTES: list[dict] = [
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    {"code": "do_high", "label": "do", "degree": 1, "register": "high"},
+    {"code": "ri_high", "label": "ri", "degree": 2, "register": "high"},
+    {"code": "mi_high", "label": "mi", "degree": 3, "register": "high"},
+    {"code": "fa_high", "label": "fa", "degree": 4, "register": "high"},
+    {"code": "so_high", "label": "so", "degree": 5, "register": "high"},
+]
+
+DIZI_NOTES: list[dict] = [
+    {"code": "so_low", "label": "so", "degree": 5, "register": "low"},
+    {"code": "la_low", "label": "la", "degree": 6, "register": "low"},
+    {"code": "xi_low", "label": "xi", "degree": 7, "register": "low"},
+    *[{"code": name, "label": name, "degree": i, "register": "normal"}
+      for i, name in enumerate(_NOTE_NAMES, 1)],
+    {"code": "do_high", "label": "do", "degree": 1, "register": "high"},
+    {"code": "ri_high", "label": "ri", "degree": 2, "register": "high"},
+    {"code": "mi_high", "label": "mi", "degree": 3, "register": "high"},
+    {"code": "fa_high", "label": "fa", "degree": 4, "register": "high"},
+    {"code": "so_high", "label": "so", "degree": 5, "register": "high"},
+    {"code": "la_high", "label": "la", "degree": 6, "register": "high"},
+]
+
 INSTRUMENT_NOTES: dict[str, list[dict]] = {
-    "guitar": GUITAR_NOTES,
     "pipa": PIPA_NOTES,
     "suona": SUONA_NOTES,
+    "guzheng": GUZHENG_NOTES,
+    "erhu": ERHU_NOTES,
+    "dizi": DIZI_NOTES,
 }
 
-NOTES: list[dict] = GUITAR_NOTES
+NOTES: list[dict] = PIPA_NOTES
 
 _NOTE_BY_CODE: dict[str, dict] = {
     n["code"]: n

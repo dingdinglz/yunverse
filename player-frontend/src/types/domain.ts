@@ -3,7 +3,7 @@
  */
 
 /** 乐器编码，见 api.md §2.5。注意”琵琶”不可写作”枇杷”。 */
-export type InstrumentCode = 'guitar' | 'pipa' | 'suona';
+export type InstrumentCode = 'pipa' | 'suona' | 'guzheng' | 'erhu' | 'dizi';
 
 export interface Instrument {
   code: InstrumentCode;
