@@ -1,0 +1,10 @@
+{
+  "label": "Builder",
+  "position": 2,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/builder",
+    "description": "Command reference for previewing, building, and publishing packaged WebSpatial apps."
+  }
+}

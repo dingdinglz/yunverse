@@ -1,0 +1,86 @@
+.hud-panel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  --xr-background-material: translucent;
+  border-radius: 32px;
+  overflow: hidden;
+}
+
+.hud-surface {
+  position: absolute;
+  inset: 0;
+  background: var(--hud-bg);
+  padding: 6% 5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: var(--sans);
+}
+
+.hud-empty {
+  margin: auto;
+  color: var(--hud-green-muted);
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+}
+
+.hud-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.hud-row-bottom {
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hud-field-end {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.hud-label {
+  color: var(--hud-green-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+}
+
+.hud-value {
+  color: var(--hud-green);
+  font-size: 1.3rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hud-note {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-note-value {
+  color: var(--hud-green);
+  font-size: 4.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.hud-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--hud-green);
+  flex: none;
+}

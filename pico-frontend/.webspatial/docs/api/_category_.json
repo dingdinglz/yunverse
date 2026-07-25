@@ -1,0 +1,10 @@
+{
+  "label": "API",
+  "position": 4,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api",
+    "description": "Reference docs for WebSpatial Builder and the WebSpatial React SDK."
+  }
+}

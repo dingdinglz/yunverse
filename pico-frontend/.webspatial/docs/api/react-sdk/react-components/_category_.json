@@ -1,0 +1,10 @@
+{
+  "label": "React Components",
+  "position": 1,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk/react-components",
+    "description": "React components and JSX markers for rendering 3D and spatial content."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "label": "Event API",
+  "position": 4,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/api/react-sdk/event-api",
+    "description": "Spatial interaction events for tap, drag, magnify, and rotate gestures."
+  }
+}
