@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react';
+import { Platform } from 'react-native';
 
 import { AppError, unknownError } from '@/services/errors';
 import { play, stopPlay as stopPlayApi } from '@/services/play-service';
 import type { PlayData, PlayRequest } from '@/types/api';
 import type { NoteCode } from '@/types/domain';
+import { sendPlayState } from '../../modules/rokid-cxr/src';
 
 export type PlayPhase = 'idle' | 'sending' | 'success' | 'error';
 
@@ -42,6 +44,25 @@ export function usePlay(baseUrl: string) {
           warnings: data.warnings ?? [],
         });
         setPhase('success');
+
+        // 推送到眼镜端（fire-and-forget，不阻断用户操作）
+        if (Platform.OS === 'android') {
+          try {
+            const packet = {
+              instrument: data.instrument,
+              key: data.key,
+              note: data.note,
+              technique: data.technique,
+              playback: { status: data.playback.status },
+              phase: 'success' as const,
+            };
+            sendPlayState(JSON.stringify(packet)).catch((err: unknown) => {
+              console.warn('[CXR] Failed to push state:', err);
+            });
+          } catch (e) {
+            console.warn('[CXR] sendPlayState error:', e);
+          }
+        }
       } catch (err) {
         const appError = err instanceof AppError ? err : unknownError(err);
         setErrorMessage(appError.message);
